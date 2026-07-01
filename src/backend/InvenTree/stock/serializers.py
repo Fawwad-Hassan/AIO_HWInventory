@@ -339,6 +339,29 @@ class StockItemSerializer(
 
     import_exclude_fields = ['location_path', 'serial_numbers', 'use_pack_size']
 
+    def export_to_file(self, data, headers, file_format):
+        """Export stock data, optionally as a multi-sheet (per-category) workbook.
+
+        When the dedicated 'Stock Category Exporter' plugin
+        (``inventree-stock-category-exporter``) is selected together with the
+        xlsx format, produce one worksheet per part category. For all other
+        cases, fall back to the default single-sheet export.
+        """
+        # The active export plugin arrives via the merged query parameters, which
+        # may be a single string or a (multi-value) list; normalise to a string.
+        export_plugin = self.context.get('export_plugin')
+        if isinstance(export_plugin, (list, tuple)):
+            export_plugin = export_plugin[0] if export_plugin else None
+
+        if str(file_format).lower() == 'xlsx' and (
+            export_plugin == 'inventree-stock-category-exporter'
+        ):
+            from stock.exporter_helpers import build_category_workbook
+
+            return build_category_workbook(self, data, headers)
+
+        return super().export_to_file(data, headers, file_format)
+
     class Meta:
         """Metaclass options."""
 
