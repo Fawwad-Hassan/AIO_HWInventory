@@ -9,11 +9,15 @@ import re
 import tablib
 
 # Keys injected into each exported row by the stock category exporter plugin.
-# Only CATEGORY_NAME_KEY is added to the export headers (as a visible column);
-# the other two are used purely for grouping.
+# CATEGORY_ID_KEY is used purely for grouping into sheets; the others are also
+# surfaced as columns via the plugin's curated header set.
 CATEGORY_ID_KEY = 'part_category_id'
 CATEGORY_NAME_KEY = 'part_category_name'
 CATEGORY_PATH_KEY = 'part_category_path'
+
+# Keys injected for the location name/path (resolved from the stock item).
+LOCATION_NAME_KEY = 'stock_location_name'
+LOCATION_PATH_KEY = 'stock_location_path'
 
 # Characters which are not permitted in an Excel worksheet title.
 _INVALID_SHEET_CHARS = re.compile(r'[\[\]:*?/\\]')

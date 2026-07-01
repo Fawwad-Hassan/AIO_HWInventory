@@ -6,12 +6,20 @@ delegates to ``stock.exporter_helpers.build_category_workbook`` when this
 plugin is selected together with the xlsx format.
 """
 
+from collections import OrderedDict
+
 from django.utils.translation import gettext_lazy as _
 
 from InvenTree.helpers import current_date
 from plugin import InvenTreePlugin
 from plugin.mixins import DataExportMixin
-from stock.exporter_helpers import CATEGORY_ID_KEY, CATEGORY_NAME_KEY, CATEGORY_PATH_KEY
+from stock.exporter_helpers import (
+    CATEGORY_ID_KEY,
+    CATEGORY_NAME_KEY,
+    CATEGORY_PATH_KEY,
+    LOCATION_NAME_KEY,
+    LOCATION_PATH_KEY,
+)
 from stock.models import StockItem
 from stock.serializers import StockItemSerializer
 
@@ -51,9 +59,26 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
         return queryset.select_related('part', 'part__category')
 
     def update_headers(self, headers, context, **kwargs):
-        """Add a 'Category' column to the export headers."""
-        headers[CATEGORY_NAME_KEY] = _('Category')
-        return headers
+        """Return a curated, tidy set of columns (instead of every field).
+
+        The default export exposes ~40 internal StockItem fields. This exporter
+        is intentionally clean: only the columns below are produced. The
+        Serial Number / Quantity columns are further pruned per sheet by the
+        workbook builder (serialized categories keep Serial Number, bulk
+        categories keep Quantity).
+        """
+        clean = OrderedDict()
+        clean['part_detail.name'] = _('Asset Name')
+        clean['part_detail.IPN'] = _('Asset ID')
+        clean['serial'] = _('Serial Number')
+        clean['quantity'] = _('Quantity')
+        clean[CATEGORY_NAME_KEY] = _('Asset Type')
+        clean['part_detail.description'] = _('Part Description')
+        clean['status_text'] = _('Status')
+        clean[LOCATION_NAME_KEY] = _('Location Name')
+        clean[LOCATION_PATH_KEY] = _('Location Path')
+        clean['updated'] = _('Updated')
+        return clean
 
     def export_data(
         self, queryset, serializer_class, headers, context, output, **kwargs
@@ -89,6 +114,10 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
                 row[CATEGORY_PATH_KEY] = (
                     category.pathstring if category else _('Uncategorized')
                 )
+
+                location = item.location
+                row[LOCATION_NAME_KEY] = location.name if location else ''
+                row[LOCATION_PATH_KEY] = location.pathstring if location else ''
 
                 rows.append(row)
 

@@ -51,7 +51,10 @@ Branch: `my-customizations`
 New/changed code (all on `my-customizations`):
 - `src/backend/InvenTree/plugin/builtin/exporter/stock_category_exporter.py` — new
   export plugin `StockCategoryExporter`, slug `inventree-stock-category-exporter`.
-  Groups stock into one sheet per `Part.category`; adds a **Category** column.
+  Groups stock into one sheet per `Part.category` and emits a **curated column
+  set** (Asset Name, Asset ID, Serial Number/Quantity, Asset Type, Part
+  Description, Status, Location Name, Location Path, Updated) instead of every
+  internal field.
 - `src/backend/InvenTree/stock/exporter_helpers.py` — `build_category_workbook()`,
   builds the multi-sheet xlsx (`tablib.Databook`), prunes Serial-Number vs
   Quantity per sheet, sanitises sheet names.

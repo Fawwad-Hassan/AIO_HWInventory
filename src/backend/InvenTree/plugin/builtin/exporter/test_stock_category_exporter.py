@@ -67,8 +67,13 @@ class StockCategoryExporterTest(InvenTreeAPITestCase):
             self.assertEqual(len(lowered), len(set(lowered)))
             for name in workbook.sheetnames:
                 self.assertLessEqual(len(name), 31)
-                # Every sheet carries the injected 'Category' column
-                self.assertIn('Category', self._header(workbook[name]))
+                header = self._header(workbook[name])
+                # Every sheet carries the curated columns
+                self.assertIn('Asset Name', header)
+                self.assertIn('Asset Type', header)
+                self.assertIn('Location Name', header)
+                # Curated set only: internal fields must not leak through
+                self.assertNotIn('Barcode Hash', header)
 
             # Serialized category: Serial Number column, no Quantity column
             serial_header = self._header(workbook['ZZ Serialized Widgets'])
@@ -85,6 +90,6 @@ class StockCategoryExporterTest(InvenTreeAPITestCase):
         with self.export_data(
             url, export_plugin=self.SLUG, export_format='csv'
         ) as data_file:
-            self.process_csv(data_file, required_cols=['Category'])
+            self.process_csv(data_file, required_cols=['Asset Name', 'Asset Type'])
 
         registry.set_plugin_state(self.SLUG, False)
