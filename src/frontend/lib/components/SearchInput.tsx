@@ -11,14 +11,17 @@ export function SearchInput({
   disabled,
   debounce,
   placeholder,
+  searchTerm,
   searchCallback
 }: Readonly<{
   disabled?: boolean;
   debounce?: number;
   placeholder?: string;
+  searchTerm?: string;
   searchCallback: (searchTerm: string) => void;
 }>) {
-  const [value, setValue] = useState<string>('');
+  // Seed the input with any persisted search term so it survives navigation.
+  const [value, setValue] = useState<string>(searchTerm ?? '');
   const [searchText] = useDebouncedValue(value, debounce ?? 500);
 
   useEffect(() => {

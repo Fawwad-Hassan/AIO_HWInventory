@@ -218,6 +218,7 @@ export default function InvenTreeTableHeader({
           {tableProps.enableSearch && (
             <SearchInput
               disabled={hasCustomSearch}
+              searchTerm={tableState.searchTerm}
               searchCallback={(term: string) => tableState.setSearchTerm(term)}
             />
           )}
