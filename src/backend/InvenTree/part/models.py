@@ -1356,9 +1356,33 @@ class Part(
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        verbose_name=_('Responsible'),
-        help_text=_('Owner responsible for this part'),
+        verbose_name=_('Assigned To'),
+        help_text=_('User or group assigned to this part'),
         related_name='parts_responsible',
+    )
+
+    class AssetClassification(models.TextChoices):
+        """Asset classification levels for a Part."""
+
+        HIGH = 'High', _('High')
+        MEDIUM = 'Medium', _('Medium')
+        LOW = 'Low', _('Low')
+
+    asset_classification = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        choices=AssetClassification.choices,
+        verbose_name=_('Asset Classification'),
+        help_text=_('Classification level for this asset'),
+    )
+
+    asset_owner = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name=_('Owner'),
+        help_text=_('Owner of this asset'),
     )
 
     @property

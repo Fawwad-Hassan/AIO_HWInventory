@@ -215,6 +215,16 @@ function partTableColumns(): TableColumn[] {
       accessor: 'virtual',
       defaultVisible: false
     }),
+    {
+      accessor: 'asset_classification',
+      title: t`Asset Classification`,
+      sortable: false
+    },
+    {
+      accessor: 'asset_owner',
+      title: t`Owner`,
+      sortable: false
+    },
     LinkColumn({})
   ];
 }

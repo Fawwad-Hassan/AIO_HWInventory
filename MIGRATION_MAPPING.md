@@ -34,10 +34,10 @@ Branch: `my-customizations`
 | Location Name | Location Name | `StockLocation.name` | ✅ exists |
 | Location Path | Location Path | `StockLocation.pathstring` | ✅ exists |
 | Updated | Updated | `StockItem.updated` | ✅ exists |
-| Asset Classification | Asset Classification | Part parameter today → **own field in Phase 2** | ⏳ Phase 2 |
+| Asset Classification | Asset Classification | `Part.asset_classification` (choices High/Medium/Low) | ✅ Phase 2 |
 | *(sheet grouping / Asset Type)* | Asset Type / sheet | `Part.category` (`PartCategory`) | ✅ Phase 1 (added to export) |
-| *(none)* | Owner | **new field** | ⏳ Phase 2 |
-| *(none)* | Assigned To | **new field** | ⏳ Phase 2 |
+| *(none)* | Owner | `Part.asset_owner` (free text) | ✅ Phase 2 |
+| Assigned To | Assigned To | `Part.responsible_owner` (existing FK, renamed) | ✅ Phase 2 |
 | *(none)* | Manufacturer | `Company` (manufacturer) — not populated in old data | ⏳ later / optional |
 
 ---
@@ -66,15 +66,19 @@ Behaviour: in the app, **Stock → Export → "Stock Category Exporter" + Excel*
 produces one worksheet per category. Serialized categories show *Serial Number*;
 bulk categories show *Quantity*. Null-category items go to an "Uncategorized" sheet.
 
-### Phase 2 — New fields (Owner, Assigned To, Asset Classification) ⏳ (pending)
+### Phase 2 — New fields (Owner, Asset Classification) + rename ✅ (implemented)
 
-Blocked on user decisions:
-1. Field level: on the Part (item type) or StockItem (physical unit)?
-2. Owner / Assigned To: free-text names or linked user accounts?
-3. Asset Classification: fixed dropdown (High/Medium/Low) or free text?
+All three attributes live on the **Part** model (migration `part/0151_part_asset_classification_part_asset_owner_and_more.py`):
 
-When built, record here: model + table, field type/defaults, migration name, and
-how each maps from the old export (esp. Asset Classification param → new field).
+| New/changed field | Model field | Type | Notes |
+|---|---|---|---|
+| Asset Classification | `Part.asset_classification` | CharField, choices | Fixed dropdown; stored values **`High` / `Medium` / `Low`** (value == label, matches old data exactly). blank/null allowed. |
+| Owner | `Part.asset_owner` | CharField (free text, max 100) | Named `asset_owner` to avoid clashing with the built-in `StockItem.owner`. UI label "Owner". |
+| Assigned To | `Part.responsible_owner` (existing) | FK → users Owner (user/group) | Renamed label only: verbose_name + serializer field label + UI → **"Assigned To"**. Data/field name unchanged. |
+
+Surfaced in: PartSerializer + PartBriefSerializer (so stock `part_detail` carries them); the Add/Edit Part form (`usePartFields`); Part table; Stock table (via `part_detail.*`); Part detail page; and the stock category exporter columns.
+
+**Migration data notes:** old export's `Asset Classification` (`High`/`Medium`/`Low`/blank) maps 1:1 into `Part.asset_classification`. Owner values load into `Part.asset_owner` as free text.
 
 ### Phase 3 — Simplified "Add Part" popup ⏳ (pending)
 

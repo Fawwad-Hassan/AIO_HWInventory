@@ -71,6 +71,8 @@ export function usePartFields({
           is_active: true
         }
       },
+      asset_classification: {},
+      asset_owner: {},
       component: {
         default: globalSettings.isSet('PART_COMPONENT')
       },

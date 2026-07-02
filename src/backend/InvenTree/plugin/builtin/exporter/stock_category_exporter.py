@@ -75,6 +75,8 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
         clean[CATEGORY_NAME_KEY] = _('Asset Type')
         clean['part_detail.description'] = _('Part Description')
         clean['status_text'] = _('Status')
+        clean['part_detail.asset_classification'] = _('Asset Classification')
+        clean['part_detail.asset_owner'] = _('Owner')
         clean[LOCATION_NAME_KEY] = _('Location Name')
         clean[LOCATION_PATH_KEY] = _('Location Path')
         clean['updated'] = _('Updated')

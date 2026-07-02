@@ -575,9 +575,21 @@ export default function PartDetail() {
       {
         type: 'string',
         name: 'responsible',
-        label: t`Responsible`,
+        label: t`Assigned To`,
         badge: 'owner',
         hidden: !part.responsible
+      },
+      {
+        type: 'string',
+        name: 'asset_classification',
+        label: t`Asset Classification`,
+        hidden: !part.asset_classification
+      },
+      {
+        type: 'string',
+        name: 'asset_owner',
+        label: t`Owner`,
+        hidden: !part.asset_owner
       },
       {
         name: 'default_expiry',

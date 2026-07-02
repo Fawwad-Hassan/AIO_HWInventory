@@ -122,6 +122,16 @@ function stockItemTableColumns({
       copyable: true
     },
     {
+      accessor: 'part_detail.asset_classification',
+      title: t`Asset Classification`,
+      sortable: false
+    },
+    {
+      accessor: 'part_detail.asset_owner',
+      title: t`Owner`,
+      sortable: false
+    },
+    {
       accessor: 'purchase_price',
       title: t`Unit Price`,
       sortable: true,

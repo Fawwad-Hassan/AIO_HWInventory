@@ -360,6 +360,8 @@ class PartBriefSerializer(
             'units',
             'pricing_min',
             'pricing_max',
+            'asset_classification',
+            'asset_owner',
         ]
         read_only_fields = ['barcode_hash']
 
@@ -653,6 +655,8 @@ class PartSerializer(
             'pricing_max',
             'pricing_updated',
             'responsible',
+            'asset_classification',
+            'asset_owner',
             'price_breaks',
             # Annotated fields
             'allocated_to_build_orders',
@@ -860,6 +864,7 @@ class PartSerializer(
         required=False,
         allow_null=True,
         source='responsible_owner',
+        label=_('Assigned To'),
     )
 
     creation_user = serializers.PrimaryKeyRelatedField(
