@@ -1,4 +1,4 @@
-import { randomId } from '@mantine/hooks';
+import { randomId, useLocalStorage } from '@mantine/hooks';
 import { useCallback, useMemo, useState } from 'react';
 
 import type { FilterSetState, TableFilter } from '../types/Filters';
@@ -80,10 +80,22 @@ export default function useTable(
   // Total record count
   const [recordCount, setRecordCount] = useState<number>(0);
 
-  const [page, setPage] = useState<number>(1);
+  // Persist the active page per-table (keyed by table name) so that navigating
+  // into a detail view and back restores the page the user was on.
+  const [page, setPage] = useLocalStorage<number>({
+    key: `inventree-table-page-${tableName}`,
+    defaultValue: 1,
+    getInitialValueInEffect: false,
+    sync: false
+  });
 
-  // Search term
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  // Persist the search term per-table (same rationale as the page number).
+  const [searchTerm, setSearchTerm] = useLocalStorage<string>({
+    key: `inventree-table-search-${tableName}`,
+    defaultValue: '',
+    getInitialValueInEffect: false,
+    sync: false
+  });
 
   // Table records
   const [records, setRecords] = useState<any[]>([]);

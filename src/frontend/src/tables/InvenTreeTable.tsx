@@ -31,7 +31,7 @@ import {
   useDataTableColumns
 } from 'mantine-datatable';
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../contexts/ApiContext';
 import { extractAvailableFields } from '../functions/forms';
@@ -446,15 +446,42 @@ export function InvenTreeTableInternal<T extends Record<string, any>>({
     }
   }, [tableColumnNames, tableColumns.columnsOrder]);
 
-  // Reset the pagination state when the search term changes
+  // Reset the pagination state when the search term / filters actually change.
+  // We track the previous "query signature" so that (a) the very first mount does
+  // NOT reset the page — this preserves the persisted page when returning to the
+  // table — and (b) a change of object reference without a change of value does
+  // not spuriously reset the page.
+  const lastQuerySignature = useRef<string | null>(null);
   useEffect(() => {
-    tableState.setPage(1);
-    tableState.clearSelectedRecords();
+    const signature = JSON.stringify({
+      search: tableState.searchTerm,
+      filters: tableState.filterSet.activeFilters?.map((f) => [
+        f.name,
+        f.value
+      ]),
+      params: searchParams?.toString()
+    });
+
+    if (lastQuerySignature.current === null) {
+      // First run after mount: record the baseline, but do not reset the page.
+      lastQuerySignature.current = signature;
+      return;
+    }
+
+    if (lastQuerySignature.current !== signature) {
+      lastQuerySignature.current = signature;
+      tableState.setPage(1);
+      tableState.clearSelectedRecords();
+    }
   }, [tableState.searchTerm, tableState.filterSet.activeFilters, searchParams]);
 
   // Account for invalid page offsets
   useEffect(() => {
     if (
+      // Only correct the page once the record count is known (i.e. after data has
+      // loaded); otherwise a restored page would be reset to 1 on first mount
+      // while recordCount is still 0.
+      tableState.recordCount > 0 &&
       tableState.page > 1 &&
       pageSize * (tableState.page - 1) > tableState.recordCount
     ) {
