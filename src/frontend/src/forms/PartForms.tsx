@@ -40,8 +40,16 @@ export function usePartFields({
       name: {},
       IPN: {},
       description: {},
-      revision: {},
+      // Asset Classification is a key field for the team - show it high up,
+      // immediately after the description.
+      asset_classification: {},
+      // --- Fields below are hidden for this deployment (kept for future use).
+      // To re-show any field, remove its `hidden: true` entry.
+      revision: {
+        hidden: true
+      },
       revision_of: {
+        hidden: true,
         filters: {
           is_template: false,
           assembly: globalSettings.isSet('PART_REVISION_ASSEMBLY_ONLY')
@@ -50,45 +58,61 @@ export function usePartFields({
         }
       },
       variant_of: {
+        hidden: true,
         filters: {
           is_template: true
         }
       },
       keywords: {},
-      tags: TagsField({}),
-      units: {},
-      link: {},
+      tags: {
+        ...TagsField({}),
+        hidden: true
+      },
+      units: {
+        hidden: true
+      },
+      link: {
+        hidden: true
+      },
       default_location: {
         filters: {
           structural: false
         }
       },
-      default_expiry: {},
+      default_expiry: {
+        hidden: true
+      },
       minimum_stock: {},
-      maximum_stock: {},
+      maximum_stock: {
+        hidden: true
+      },
       responsible: {
         filters: {
           is_active: true
         }
       },
-      asset_classification: {},
       asset_owner: {},
       component: {
+        hidden: true,
         default: globalSettings.isSet('PART_COMPONENT')
       },
       assembly: {
+        hidden: true,
         default: globalSettings.isSet('PART_ASSEMBLY')
       },
       is_template: {
+        hidden: true,
         default: globalSettings.isSet('PART_TEMPLATE')
       },
       testable: {
+        hidden: true,
         default: false
       },
       trackable: {
         default: globalSettings.isSet('PART_TRACKABLE')
       },
       purchaseable: {
+        hidden: true,
         value: purchaseable,
         default: globalSettings.isSet('PART_PURCHASEABLE'),
         onValueChange: (value: boolean) => {
@@ -96,6 +120,7 @@ export function usePartFields({
         }
       },
       salable: {
+        hidden: true,
         default: globalSettings.isSet('PART_SALABLE')
       },
       virtual: {
@@ -105,9 +130,12 @@ export function usePartFields({
           setVirtual(value);
         }
       },
-      locked: {},
+      locked: {
+        hidden: true
+      },
       active: {},
       starred: {
+        hidden: true,
         field_type: 'boolean',
         label: t`Subscribed`,
         description: t`Subscribe to notifications for this part`,
@@ -118,7 +146,7 @@ export function usePartFields({
 
     // Additional fields for creation
     if (create && !virtual) {
-      fields.copy_category_parameters = {};
+      fields.copy_category_parameters = { hidden: true };
 
       // Show the initial stock section for non-virtual parts. (Upstream InvenTree
       // wraps this in `if (virtual != false)`, which contradicts the outer
@@ -135,6 +163,7 @@ export function usePartFields({
 
       if (purchaseable) {
         fields.initial_supplier = {
+          hidden: true,
           icon: <IconBuildingStore />,
           children: {
             supplier: {
