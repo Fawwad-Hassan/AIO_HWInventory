@@ -129,6 +129,28 @@ class PartCategory(
         help_text=_('Default keywords for parts in this category'),
     )
 
+    export_as_separate_sheet = models.BooleanField(
+        default=True,
+        verbose_name=_('Export as Separate Sheet'),
+        help_text=_(
+            'Export parts in this category to their own worksheet '
+            'in the category stock export'
+        ),
+    )
+
+    export_with_category = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name=_('Export With Category'),
+        help_text=_(
+            'When not exporting as a separate sheet, merge these parts into '
+            "this category's worksheet"
+        ),
+    )
+
     _icon = models.CharField(
         blank=True,
         null=True,

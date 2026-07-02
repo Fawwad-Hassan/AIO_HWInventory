@@ -252,10 +252,26 @@ export function usePartFields({
  * Construct a set of fields for creating / editing a PartCategory instance
  */
 export function partCategoryFields({
-  create
+  create,
+  initialSeparateSheet
 }: {
   create?: boolean;
+  initialSeparateSheet?: boolean;
 }): ApiFormFieldSet {
+  // Track the "export as separate sheet" toggle so the merge-target dropdown
+  // can be shown only when it is turned off.
+  const [separateSheet, setSeparateSheet] = useState<boolean>(
+    initialSeparateSheet ?? true
+  );
+
+  // Seed the toggle state from the loaded instance value (edit forms), since
+  // onValueChange does not fire on initial load.
+  useEffect(() => {
+    if (initialSeparateSheet !== undefined) {
+      setSeparateSheet(initialSeparateSheet);
+    }
+  }, [initialSeparateSheet]);
+
   const fields: ApiFormFieldSet = useMemo(() => {
     const fields: ApiFormFieldSet = {
       parent: {
@@ -271,6 +287,18 @@ export function partCategoryFields({
       },
       default_keywords: {},
       structural: {},
+      export_as_separate_sheet: {
+        onValueChange: (value: boolean) => {
+          setSeparateSheet(value);
+        }
+      },
+      export_with_category: {
+        hidden: separateSheet,
+        required: !separateSheet,
+        filters: {
+          structural: false
+        }
+      },
       starred: {
         field_type: 'boolean',
         label: t`Subscribed`,
@@ -288,7 +316,7 @@ export function partCategoryFields({
     }
 
     return fields;
-  }, [create]);
+  }, [create, separateSheet]);
 
   return fields;
 }

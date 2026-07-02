@@ -101,6 +101,8 @@ class CategorySerializer(
             'path',
             'starred',
             'structural',
+            'export_as_separate_sheet',
+            'export_with_category',
             'icon',
             'parent_default_location',
             # Optional fields
@@ -155,6 +157,36 @@ class CategorySerializer(
             ]
 
         return category.pk in self.starred_categories
+
+    def validate(self, data):
+        """Validate the category export settings.
+
+        When a category is not exported as a separate worksheet, a target
+        category to merge into must be provided (and cannot be itself).
+        """
+        data = super().validate(data)
+
+        separate = data.get(
+            'export_as_separate_sheet',
+            getattr(self.instance, 'export_as_separate_sheet', True),
+        )
+        target = data.get(
+            'export_with_category', getattr(self.instance, 'export_with_category', None)
+        )
+
+        if not separate and target is None:
+            raise serializers.ValidationError({
+                'export_with_category': _(
+                    'A category is required when not exporting as a separate sheet'
+                )
+            })
+
+        if target is not None and self.instance and target.pk == self.instance.pk:
+            raise serializers.ValidationError({
+                'export_with_category': _('A category cannot be merged into itself')
+            })
+
+        return data
 
     path = OptionalField(
         serializer_class=TreePathSerializer,

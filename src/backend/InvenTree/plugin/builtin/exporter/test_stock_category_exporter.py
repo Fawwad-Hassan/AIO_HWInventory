@@ -94,6 +94,27 @@ class StockCategoryExporterTest(InvenTreeAPITestCase):
 
         registry.set_plugin_state(self.SLUG, False)
 
+    def test_category_merge(self):
+        """A category set to merge exports into the target category's sheet."""
+        # Merge the bulk category into the serialized category's sheet
+        self.cat_bulk.export_as_separate_sheet = False
+        self.cat_bulk.export_with_category = self.cat_serial
+        self.cat_bulk.save()
+
+        registry.set_plugin_state(self.SLUG, True)
+        url = reverse('api-stock-list')
+
+        with self.export_data(
+            url, export_plugin=self.SLUG, export_format='xlsx', decode=False
+        ) as data_file:
+            workbook = openpyxl.load_workbook(data_file)
+            # The merged category no longer has its own sheet ...
+            self.assertNotIn('ZZ Bulk Gadgets', workbook.sheetnames)
+            # ... and the target sheet still exists
+            self.assertIn('ZZ Serialized Widgets', workbook.sheetnames)
+
+        registry.set_plugin_state(self.SLUG, False)
+
     def test_multi_value_export_plugin_param(self):
         """Multi-sheet triggers even when export_plugin is sent more than once.
 

@@ -204,7 +204,9 @@ export default function CategoryDetail() {
     url: ApiEndpoints.category_list,
     pk: id,
     title: t`Edit Part Category`,
-    fields: partCategoryFields({}),
+    fields: partCategoryFields({
+      initialSeparateSheet: category?.export_as_separate_sheet
+    }),
     onFormSuccess: refreshInstance
   });
 

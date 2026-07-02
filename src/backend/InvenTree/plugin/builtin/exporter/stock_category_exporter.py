@@ -56,7 +56,37 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
 
     def filter_queryset(self, queryset):
         """Prefetch the related part category to avoid extra queries."""
-        return queryset.select_related('part', 'part__category')
+        return queryset.select_related(
+            'part', 'part__category', 'part__category__export_with_category'
+        )
+
+    def _resolve_sheet_category(self, category, cache):
+        """Resolve a category to the category whose worksheet it belongs on.
+
+        Categories with 'export_as_separate_sheet' disabled are merged into their
+        configured 'export_with_category' target, following the chain (with a
+        guard against cycles).
+        """
+        if category is None:
+            return None
+
+        if category.pk in cache:
+            return cache[category.pk]
+
+        seen: set = set()
+        cat = category
+
+        while (
+            cat is not None
+            and not cat.export_as_separate_sheet
+            and cat.export_with_category_id
+            and cat.pk not in seen
+        ):
+            seen.add(cat.pk)
+            cat = cat.export_with_category
+
+        cache[category.pk] = cat
+        return cat
 
     def update_headers(self, headers, context, **kwargs):
         """Return a curated, tidy set of columns (instead of every field).
@@ -99,6 +129,9 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
         offset = 0
         total = queryset.count()
 
+        # Cache category resolution (merge-into-sheet) results across all rows
+        category_cache: dict = {}
+
         while offset < total:
             chunk = list(queryset[offset : offset + self.EXPORT_CHUNK_SIZE])
 
@@ -107,7 +140,8 @@ class StockCategoryExporter(DataExportMixin, InvenTreePlugin):
             ).data
 
             for item, row in zip(chunk, chunk_rows, strict=False):
-                category = item.part.category if item.part_id else None
+                raw_category = item.part.category if item.part_id else None
+                category = self._resolve_sheet_category(raw_category, category_cache)
 
                 row[CATEGORY_ID_KEY] = category.pk if category else 0
                 row[CATEGORY_NAME_KEY] = (
