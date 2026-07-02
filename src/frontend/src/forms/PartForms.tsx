@@ -120,17 +120,18 @@ export function usePartFields({
     if (create && !virtual) {
       fields.copy_category_parameters = {};
 
-      if (virtual != false) {
-        fields.initial_stock = {
-          icon: <IconPackages />,
-          children: {
-            quantity: {
-              value: 0
-            },
-            location: {}
-          }
-        };
-      }
+      // Show the initial stock section for non-virtual parts. (Upstream InvenTree
+      // wraps this in `if (virtual != false)`, which contradicts the outer
+      // `!virtual` check and hides the section entirely — corrected here.)
+      fields.initial_stock = {
+        icon: <IconPackages />,
+        children: {
+          quantity: {
+            value: 0
+          },
+          location: {}
+        }
+      };
 
       if (purchaseable) {
         fields.initial_supplier = {
