@@ -7,6 +7,7 @@ import { UserRoles } from '@lib/enums/Roles';
 import type { SettingsStateProps } from '@lib/types/Settings';
 import type { UserStateProps } from '@lib/types/User';
 import {
+  IconAlertTriangle,
   IconBox,
   IconBuildingFactory2,
   IconDashboard,
@@ -51,6 +52,12 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
         user.hasViewRole(UserRoles.stock_location) ||
         (globalSettings.isSet('TRANSFERORDER_ENABLED') &&
           user.hasViewRole(UserRoles.transfer_order))
+    },
+    {
+      name: 'low-stock',
+      title: t`Low Stock`,
+      icon: <IconAlertTriangle />,
+      visible: user.hasViewRole(UserRoles.part)
     },
     {
       name: 'manufacturing',

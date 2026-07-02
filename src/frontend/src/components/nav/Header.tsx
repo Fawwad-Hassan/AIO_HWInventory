@@ -253,6 +253,22 @@ function NavTabs() {
   const navTabs = getNavTabs(user);
   const userSettings = useUserSettingsState();
 
+  // Live count of parts below their minimum stock level (for the nav badge)
+  const lowStockQuery = useQuery({
+    queryKey: ['low-stock-count'],
+    queryFn: async () =>
+      api
+        .get(apiUrl(ApiEndpoints.part_list), {
+          params: { low_stock: true, limit: 1 }
+        })
+        .then((response: any) => response?.data?.count ?? 0)
+        .catch(() => 0),
+    refetchInterval: 60 * 1000,
+    refetchOnWindowFocus: true
+  });
+
+  const lowStockCount: number = lowStockQuery.data ?? 0;
+
   const withIcons: boolean = useMemo(
     () => userSettings.isSet('ICONS_IN_NAVBAR', false),
     [userSettings]
@@ -274,6 +290,15 @@ function NavTabs() {
         return;
       }
 
+      const tabLabel = (
+        <UnstyledButton
+          component={'a'}
+          href={generateUrl(`/${getBaseUrl()}/${tab.name}`)}
+        >
+          {tab.title}
+        </UnstyledButton>
+      );
+
       _tabs.push(
         <Tabs.Tab
           value={tab.name}
@@ -288,12 +313,21 @@ function NavTabs() {
             navigateToLink(`/${tab.name}`, navigate, event)
           }
         >
-          <UnstyledButton
-            component={'a'}
-            href={generateUrl(`/${getBaseUrl()}/${tab.name}`)}
-          >
-            {tab.title}
-          </UnstyledButton>
+          {tab.name === 'low-stock' ? (
+            <Indicator
+              inline
+              color='red'
+              size={18}
+              radius='lg'
+              offset={2}
+              label={lowStockCount}
+              disabled={lowStockCount <= 0}
+            >
+              {tabLabel}
+            </Indicator>
+          ) : (
+            tabLabel
+          )}
         </Tabs.Tab>
       );
     });
@@ -313,7 +347,7 @@ function NavTabs() {
     });
 
     return _tabs;
-  }, [extraNavs, navTabs, user, withIcons]);
+  }, [extraNavs, navTabs, user, withIcons, lowStockCount]);
 
   return (
     <Tabs

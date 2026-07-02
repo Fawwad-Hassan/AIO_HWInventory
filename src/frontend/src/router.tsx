@@ -17,6 +17,10 @@ export const LoginLayoutComponent = Loadable(
 
 export const Home = Loadable(lazy(() => import('./pages/Index/Home')));
 
+export const LowStockIndex = Loadable(
+  lazy(() => import('./pages/lowstock/LowStockIndex'))
+);
+
 export const CompanyDetail = Loadable(
   lazy(() => import('./pages/company/CompanyDetail'))
 );
@@ -168,6 +172,10 @@ export const routes = (
         <Route index element={<Navigate to='category/index/' />} />
         <Route path='category/:id?/*' element={<CategoryDetail />} />
         <Route path=':id/*' element={<PartDetail />} />
+      </Route>
+      <Route path='low-stock/'>
+        <Route index element={<Navigate to='index/' />} />
+        <Route path='index/*' element={<LowStockIndex />} />
       </Route>
       <Route path='stock/'>
         <Route index element={<Navigate to='location/index/' />} />
