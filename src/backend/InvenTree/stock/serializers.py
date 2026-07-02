@@ -347,11 +347,14 @@ class StockItemSerializer(
         xlsx format, produce one worksheet per part category. For all other
         cases, fall back to the default single-sheet export.
         """
-        # The active export plugin arrives via the merged query parameters, which
-        # may be a single string or a (multi-value) list; normalise to a string.
+        # The active export plugin arrives via the merged query parameters. The
+        # frontend may send 'export_plugin' more than once (a default followed by
+        # the user's selection), so the value can be a multi-value list. Use the
+        # LAST value, matching how the view itself resolves the plugin
+        # (request.query_params.get returns the final value).
         export_plugin = self.context.get('export_plugin')
         if isinstance(export_plugin, (list, tuple)):
-            export_plugin = export_plugin[0] if export_plugin else None
+            export_plugin = export_plugin[-1] if export_plugin else None
 
         if str(file_format).lower() == 'xlsx' and (
             export_plugin == 'inventree-stock-category-exporter'

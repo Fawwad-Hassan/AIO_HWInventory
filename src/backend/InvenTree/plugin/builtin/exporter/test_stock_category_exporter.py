@@ -93,3 +93,42 @@ class StockCategoryExporterTest(InvenTreeAPITestCase):
             self.process_csv(data_file, required_cols=['Asset Name', 'Asset Type'])
 
         registry.set_plugin_state(self.SLUG, False)
+
+    def test_multi_value_export_plugin_param(self):
+        """Multi-sheet triggers even when export_plugin is sent more than once.
+
+        The frontend sends export_plugin twice (a default, then the user's
+        selection), so the value reaches the serializer as a list. The last
+        value must win, matching how the view resolves the plugin.
+        """
+        from collections import OrderedDict
+
+        from stock.exporter_helpers import CATEGORY_ID_KEY, CATEGORY_NAME_KEY
+        from stock.serializers import StockItemSerializer
+
+        serializer = StockItemSerializer(
+            exporting=True,
+            context={
+                'export_plugin': ['inventree-exporter', self.SLUG]  # default, then ours
+            },
+        )
+        headers = OrderedDict([
+            ('part_detail.name', 'Asset Name'),
+            (CATEGORY_NAME_KEY, 'Asset Type'),
+        ])
+        data = [
+            {
+                'part_detail': {'name': 'A'},
+                CATEGORY_ID_KEY: 1,
+                CATEGORY_NAME_KEY: 'Cat A',
+            },
+            {
+                'part_detail': {'name': 'B'},
+                CATEGORY_ID_KEY: 2,
+                CATEGORY_NAME_KEY: 'Cat B',
+            },
+        ]
+
+        result = serializer.export_to_file(data, headers, 'xlsx')
+        workbook = openpyxl.load_workbook(io.BytesIO(result))
+        self.assertEqual(set(workbook.sheetnames), {'Cat A', 'Cat B'})
