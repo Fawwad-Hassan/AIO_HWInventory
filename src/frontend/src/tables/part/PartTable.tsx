@@ -39,6 +39,7 @@ import { useUserState } from '../../states/UserState';
 import {
   BooleanColumn,
   CategoryColumn,
+  DateColumn,
   DefaultLocationColumn,
   DescriptionColumn,
   IPNColumn,
@@ -225,6 +226,10 @@ function partTableColumns(): TableColumn[] {
       title: t`Owner`,
       sortable: false
     },
+    DateColumn({
+      accessor: 'updated',
+      title: t`Last Updated`
+    }),
     LinkColumn({})
   ];
 }

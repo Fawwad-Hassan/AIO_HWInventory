@@ -1093,6 +1093,7 @@ class PartList(
         'id',
         'name',
         'creation_date',
+        'updated',
         'IPN',
         'in_stock',
         'total_in_stock',

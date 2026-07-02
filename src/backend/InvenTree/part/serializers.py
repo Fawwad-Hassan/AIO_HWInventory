@@ -689,6 +689,7 @@ class PartSerializer(
             'responsible',
             'asset_classification',
             'asset_owner',
+            'updated',
             'price_breaks',
             # Annotated fields
             'allocated_to_build_orders',
@@ -712,7 +713,7 @@ class PartSerializer(
             'copy_category_parameters',
             'tags',
         ]
-        read_only_fields = ['barcode_hash', 'creation_date', 'creation_user']
+        read_only_fields = ['barcode_hash', 'creation_date', 'creation_user', 'updated']
 
     def __init__(self, *args, **kwargs):
         """Custom initialization method for PartSerializer.

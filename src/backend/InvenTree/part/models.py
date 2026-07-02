@@ -1373,6 +1373,14 @@ class Part(
         related_name='parts_created',
     )
 
+    updated = models.DateTimeField(
+        auto_now=True,
+        null=True,
+        blank=True,
+        verbose_name=_('Updated'),
+        help_text=_('Timestamp of last update'),
+    )
+
     responsible_owner = models.ForeignKey(
         users.models.Owner,
         on_delete=models.SET_NULL,
