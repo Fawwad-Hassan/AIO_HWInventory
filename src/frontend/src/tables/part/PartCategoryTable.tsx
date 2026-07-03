@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { Group, Tooltip } from '@mantine/core';
+import { Anchor, Breadcrumbs, Group, Stack, Tooltip } from '@mantine/core';
 import { IconBell } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -31,6 +31,16 @@ import { InvenTreeTable } from '../InvenTreeTable';
 export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
   const table = useTable('partcategory');
   const user = useUserState();
+
+  // In-place drill-down: the category whose children are currently shown, plus
+  // the breadcrumb path leading to it (so clicking a row opens its subcategories
+  // rather than navigating away).
+  const [activeParent, setActiveParent] = useState<number | undefined>(
+    parentId
+  );
+  const [categoryPath, setCategoryPath] = useState<
+    { pk: number; name: string }[]
+  >([]);
 
   const tableColumns: TableColumn[] = useMemo(() => {
     return [
@@ -103,9 +113,9 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
     fields: newCategoryFields,
     focus: 'name',
     initialData: {
-      parent: parentId
+      parent: activeParent
     },
-    follow: true,
+    follow: false,
     modelType: ModelType.partcategory,
     table: table,
     keepOpenOption: true
@@ -186,23 +196,52 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
       {newCategory.modal}
       {editCategory.modal}
       {setParent.modal}
-      <InvenTreeTable
-        url={apiUrl(ApiEndpoints.category_list)}
-        tableState={table}
-        columns={tableColumns}
-        props={{
-          enableDownload: true,
-          enableSelection: true,
-          params: {
-            parent: parentId,
-            top_level: parentId === undefined ? true : undefined
-          },
-          tableFilters: tableFilters,
-          tableActions: tableActions,
-          rowActions: rowActions,
-          modelType: ModelType.partcategory
-        }}
-      />
+      <Stack gap='xs'>
+        <Breadcrumbs>
+          <Anchor
+            onClick={() => {
+              setActiveParent(undefined);
+              setCategoryPath([]);
+            }}
+          >
+            {t`All Categories`}
+          </Anchor>
+          {categoryPath.map((entry, index) => (
+            <Anchor
+              key={entry.pk}
+              onClick={() => {
+                setActiveParent(entry.pk);
+                setCategoryPath(categoryPath.slice(0, index + 1));
+              }}
+            >
+              {entry.name}
+            </Anchor>
+          ))}
+        </Breadcrumbs>
+        <InvenTreeTable
+          url={apiUrl(ApiEndpoints.category_list)}
+          tableState={table}
+          columns={tableColumns}
+          props={{
+            enableDownload: true,
+            enableSelection: true,
+            params: {
+              parent: activeParent,
+              top_level: activeParent === undefined ? true : undefined
+            },
+            tableFilters: tableFilters,
+            tableActions: tableActions,
+            rowActions: rowActions,
+            onRowClick: (record: any) => {
+              setActiveParent(record.pk);
+              setCategoryPath((prev) => [
+                ...prev,
+                { pk: record.pk, name: record.name }
+              ]);
+            }
+          }}
+        />
+      </Stack>
     </>
   );
 }

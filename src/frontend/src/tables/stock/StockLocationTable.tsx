@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { Group } from '@mantine/core';
+import { Anchor, Breadcrumbs, Group, Stack } from '@mantine/core';
 import { useCallback, useMemo, useState } from 'react';
 
 import { AddItemButton } from '@lib/components/AddItemButton';
@@ -30,6 +30,16 @@ import { InvenTreeTable } from '../InvenTreeTable';
 export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
   const table = useTable('stocklocation');
   const user = useUserState();
+
+  // In-place drill-down: the location whose children are currently shown, plus
+  // the breadcrumb path leading to it (so clicking a row opens its sublocations
+  // rather than navigating away).
+  const [activeParent, setActiveParent] = useState<number | undefined>(
+    parentId
+  );
+  const [locationPath, setLocationPath] = useState<
+    { pk: number; name: string }[]
+  >([]);
 
   const tableFilters: TableFilter[] = useMemo(() => {
     return [
@@ -109,9 +119,9 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
     fields: stockLocationFields(),
     focus: 'name',
     initialData: {
-      parent: parentId
+      parent: activeParent
     },
-    follow: true,
+    follow: false,
     modelType: ModelType.stocklocation,
     table: table,
     keepOpenOption: true
@@ -190,25 +200,54 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
       {newLocation.modal}
       {editLocation.modal}
       {setParent.modal}
-      <InvenTreeTable
-        url={apiUrl(ApiEndpoints.stock_location_list)}
-        tableState={table}
-        columns={tableColumns}
-        props={{
-          enableSelection: true,
-          enableDownload: true,
-          enableLabels: true,
-          enableReports: true,
-          params: {
-            parent: parentId,
-            top_level: parentId === undefined ? true : undefined
-          },
-          tableFilters: tableFilters,
-          tableActions: tableActions,
-          rowActions: rowActions,
-          modelType: ModelType.stocklocation
-        }}
-      />
+      <Stack gap='xs'>
+        <Breadcrumbs>
+          <Anchor
+            onClick={() => {
+              setActiveParent(undefined);
+              setLocationPath([]);
+            }}
+          >
+            {t`All Locations`}
+          </Anchor>
+          {locationPath.map((entry, index) => (
+            <Anchor
+              key={entry.pk}
+              onClick={() => {
+                setActiveParent(entry.pk);
+                setLocationPath(locationPath.slice(0, index + 1));
+              }}
+            >
+              {entry.name}
+            </Anchor>
+          ))}
+        </Breadcrumbs>
+        <InvenTreeTable
+          url={apiUrl(ApiEndpoints.stock_location_list)}
+          tableState={table}
+          columns={tableColumns}
+          props={{
+            enableSelection: true,
+            enableDownload: true,
+            enableLabels: true,
+            enableReports: true,
+            params: {
+              parent: activeParent,
+              top_level: activeParent === undefined ? true : undefined
+            },
+            tableFilters: tableFilters,
+            tableActions: tableActions,
+            rowActions: rowActions,
+            onRowClick: (record: any) => {
+              setActiveParent(record.pk);
+              setLocationPath((prev) => [
+                ...prev,
+                { pk: record.pk, name: record.name }
+              ]);
+            }
+          }}
+        />
+      </Stack>
     </>
   );
 }
