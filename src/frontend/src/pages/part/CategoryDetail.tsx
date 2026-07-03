@@ -1,17 +1,29 @@
 import { t } from '@lingui/core/macro';
-import { Group, LoadingOverlay, Skeleton, Stack } from '@mantine/core';
+import {
+  ActionIcon,
+  Flex,
+  Group,
+  LoadingOverlay,
+  Paper,
+  Skeleton,
+  Stack,
+  Tooltip
+} from '@mantine/core';
 import {
   IconCategory,
   IconInfoCircle,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
   IconListCheck,
   IconListDetails,
   IconPackages,
   IconSitemap,
   IconTable
 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { StylishText } from '@lib/components/StylishText';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
@@ -48,7 +60,6 @@ import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
 import { useUserSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import ParametricPartTable from '../../tables/part/ParametricPartTable';
-import { PartCategoryTable } from '../../tables/part/PartCategoryTable';
 import PartCategoryTemplateTable from '../../tables/part/PartCategoryTemplateTable';
 import { PartListTable } from '../../tables/part/PartTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
@@ -69,7 +80,12 @@ export default function CategoryDetail() {
   const user = useUserState();
   const settings = useUserSettingsState();
 
-  const [treeOpen, setTreeOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useLocalStorage<boolean>({
+    key: 'part-category-filter-open',
+    defaultValue: true,
+    getInitialValueInEffect: false,
+    sync: false
+  });
 
   const {
     instance: category,
@@ -301,12 +317,6 @@ export default function CategoryDetail() {
         content: detailsPanel,
         hidden: !id || !category?.pk
       },
-      {
-        name: 'subcategories',
-        label: id ? t`Subcategories` : t`Part Categories`,
-        icon: <IconSitemap />,
-        content: <PartCategoryTable parentId={id} />
-      },
       SegmentedControlPanel({
         name: 'parts',
         label: t`Parts`,
@@ -399,43 +409,73 @@ export default function CategoryDetail() {
         query={instanceQuery}
         requiredRole={UserRoles.part_category}
       >
-        <Stack gap='xs'>
-          <LoadingOverlay visible={instanceQuery.isFetching} />
-          <NavigationTree
-            modelType={ModelType.partcategory}
-            title={t`Part Categories`}
-            endpoint={ApiEndpoints.category_tree}
-            childIdentifier='subcategories'
-            opened={treeOpen}
-            onClose={() => {
-              setTreeOpen(false);
-            }}
-            selectedId={category?.pk}
-          />
-          <PageDetail
-            title={(category?.name ?? id) ? t`Part Category` : t`Parts`}
-            subtitle={category?.description}
-            icon={category?.icon && <ApiIcon name={category?.icon} />}
-            breadcrumbs={breadcrumbs}
-            breadcrumbAction={() => {
-              setTreeOpen(true);
-            }}
-            actions={categoryActions}
-            editAction={editCategory.open}
-            editEnabled={
-              !!category?.pk && user.hasChangePermission(ModelType.partcategory)
-            }
-          />
-          <PanelGroup
-            pageKey='partcategory'
-            panels={panels}
-            model={ModelType.partcategory}
-            instance={category}
-            reloadInstance={refreshInstance}
-            id={category.pk ?? null}
-            defaultPanel={defaultPanel}
-          />
-        </Stack>
+        <Flex align='flex-start' gap='sm' wrap='nowrap'>
+          {filterOpen ? (
+            <Paper withBorder p='xs' style={{ width: 280, flexShrink: 0 }}>
+              <Group justify='space-between' wrap='nowrap' mb='xs'>
+                <Group gap='xs' wrap='nowrap'>
+                  <IconSitemap size={18} />
+                  <StylishText size='sm'>{t`Filter by Category`}</StylishText>
+                </Group>
+                <Tooltip label={t`Hide category filter`} position='right'>
+                  <ActionIcon
+                    variant='subtle'
+                    onClick={() => setFilterOpen(false)}
+                    aria-label='collapse-category-filter'
+                  >
+                    <IconLayoutSidebarLeftCollapse />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+              <NavigationTree
+                inline
+                modelType={ModelType.partcategory}
+                title={t`Part Categories`}
+                endpoint={ApiEndpoints.category_tree}
+                childIdentifier='subcategories'
+                selectedId={category?.pk}
+              />
+            </Paper>
+          ) : (
+            <Tooltip label={t`Show category filter`} position='right'>
+              <ActionIcon
+                variant='subtle'
+                mt='xs'
+                onClick={() => setFilterOpen(true)}
+                aria-label='expand-category-filter'
+              >
+                <IconLayoutSidebarLeftExpand />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Stack gap='xs' style={{ flexGrow: 1, minWidth: 0 }}>
+            <LoadingOverlay visible={instanceQuery.isFetching} />
+            <PageDetail
+              title={(category?.name ?? id) ? t`Part Category` : t`Parts`}
+              subtitle={category?.description}
+              icon={category?.icon && <ApiIcon name={category?.icon} />}
+              breadcrumbs={breadcrumbs}
+              breadcrumbAction={() => {
+                setFilterOpen(true);
+              }}
+              actions={categoryActions}
+              editAction={editCategory.open}
+              editEnabled={
+                !!category?.pk &&
+                user.hasChangePermission(ModelType.partcategory)
+              }
+            />
+            <PanelGroup
+              pageKey='partcategory'
+              panels={panels}
+              model={ModelType.partcategory}
+              instance={category}
+              reloadInstance={refreshInstance}
+              id={category.pk ?? null}
+              defaultPanel={defaultPanel}
+            />
+          </Stack>
+        </Flex>
       </InstanceDetail>
     </>
   );

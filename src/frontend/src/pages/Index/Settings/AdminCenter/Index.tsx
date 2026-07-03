@@ -103,6 +103,22 @@ const LocationTypesTable = Loadable(
   lazy(() => import('../../../../tables/stock/LocationTypesTable'))
 );
 
+const PartCategoryTable = Loadable(
+  lazy(() =>
+    import('../../../../tables/part/PartCategoryTable').then((m) => ({
+      default: m.PartCategoryTable
+    }))
+  )
+);
+
+const StockLocationTable = Loadable(
+  lazy(() =>
+    import('../../../../tables/stock/StockLocationTable').then((m) => ({
+      default: m.StockLocationTable
+    }))
+  )
+);
+
 export default function AdminCenter() {
   const user = useUserState();
 
@@ -210,6 +226,20 @@ export default function AdminCenter() {
         hidden: !user.hasViewRole(UserRoles.part_category)
       },
       {
+        name: 'part-categories',
+        label: t`Part Categories`,
+        icon: <IconSitemap />,
+        content: <PartCategoryTable />,
+        hidden: !user.hasViewRole(UserRoles.part_category)
+      },
+      {
+        name: 'stock-locations',
+        label: t`Stock Locations`,
+        icon: <IconPackages />,
+        content: <StockLocationTable />,
+        hidden: !user.hasViewRole(UserRoles.stock_location)
+      },
+      {
         name: 'labels',
         label: t`Label Templates`,
         icon: <IconTags />,
@@ -282,7 +312,9 @@ export default function AdminCenter() {
           'selection-lists',
           'parameters',
           'category-parameters',
+          'part-categories',
           'location-types',
+          'stock-locations',
           'stocktake'
         ]
       },

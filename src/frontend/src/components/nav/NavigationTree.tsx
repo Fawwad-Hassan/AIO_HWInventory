@@ -54,15 +54,17 @@ export default function NavigationTree({
   selectedId,
   modelType,
   childIdentifier,
-  endpoint
+  endpoint,
+  inline = false
 }: Readonly<{
   title: string;
-  opened: boolean;
-  onClose: () => void;
+  opened?: boolean;
+  onClose?: () => void;
   selectedId?: number | null;
   modelType: ModelType;
   childIdentifier?: string;
   endpoint: ApiEndpoints;
+  inline?: boolean;
 }>) {
   const api = useApi();
   const navigate = useNavigate();
@@ -197,7 +199,7 @@ export default function NavigationTree({
       if (eventModified(event)) {
         navigateToLink(url, navigate, event);
       } else {
-        onClose();
+        onClose?.();
         navigate(url);
       }
     },
@@ -350,12 +352,60 @@ export default function NavigationTree({
     ]
   );
 
+  const treeContent = (
+    <Stack gap='xs'>
+      <TextInput
+        aria-label='nav-tree-search'
+        placeholder={t`Search...`}
+        value={searchValue}
+        onChange={(event) => setSearchValue(event.currentTarget.value)}
+        leftSection={<IconSearch size={16} />}
+        rightSection={
+          searchValue ? (
+            <ActionIcon
+              size='sm'
+              variant='transparent'
+              onClick={() => setSearchValue('')}
+              aria-label={t`Clear search`}
+            >
+              <IconX size={14} />
+            </ActionIcon>
+          ) : null
+        }
+      />
+      <Divider />
+      <LoadingOverlay visible={query.isFetching || query.isLoading} />
+      {query.isError ? (
+        <Alert color='red' title={t`Error`} icon={<IconExclamationCircle />}>
+          {t`Error loading navigation tree.`}
+        </Alert>
+      ) : !query.isFetching && !query.isLoading && data.length === 0 ? (
+        <Alert color='blue' icon={<IconSearch />}>
+          {t`No results found`}
+        </Alert>
+      ) : (
+        <Tree
+          data={data}
+          tree={treeState}
+          renderNode={renderNode}
+          withLines
+          levelOffset={25}
+        />
+      )}
+    </Stack>
+  );
+
+  // Rendered directly (docked sidebar) rather than as a pop-out drawer
+  if (inline) {
+    return treeContent;
+  }
+
   return (
     <Drawer
-      opened={opened}
+      opened={opened ?? false}
       size='lg'
       position='left'
-      onClose={onClose}
+      onClose={onClose ?? (() => {})}
       withCloseButton={true}
       styles={{
         header: {
@@ -372,46 +422,7 @@ export default function NavigationTree({
         </Group>
       }
     >
-      <Stack gap='xs'>
-        <TextInput
-          aria-label='nav-tree-search'
-          placeholder={t`Search...`}
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.currentTarget.value)}
-          leftSection={<IconSearch size={16} />}
-          rightSection={
-            searchValue ? (
-              <ActionIcon
-                size='sm'
-                variant='transparent'
-                onClick={() => setSearchValue('')}
-                aria-label={t`Clear search`}
-              >
-                <IconX size={14} />
-              </ActionIcon>
-            ) : null
-          }
-        />
-        <Divider />
-        <LoadingOverlay visible={query.isFetching || query.isLoading} />
-        {query.isError ? (
-          <Alert color='red' title={t`Error`} icon={<IconExclamationCircle />}>
-            {t`Error loading navigation tree.`}
-          </Alert>
-        ) : !query.isFetching && !query.isLoading && data.length === 0 ? (
-          <Alert color='blue' icon={<IconSearch />}>
-            {t`No results found`}
-          </Alert>
-        ) : (
-          <Tree
-            data={data}
-            tree={treeState}
-            renderNode={renderNode}
-            withLines
-            levelOffset={25}
-          />
-        )}
-      </Stack>
+      {treeContent}
     </Drawer>
   );
 }

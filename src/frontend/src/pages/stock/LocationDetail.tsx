@@ -1,3 +1,4 @@
+import { StylishText } from '@lib/components/StylishText';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
@@ -7,10 +8,21 @@ import type { TableFilter } from '@lib/index';
 import type { StockOperationProps } from '@lib/types/Forms';
 import type { PanelType } from '@lib/types/Panel';
 import { t } from '@lingui/core/macro';
-import { Group, Skeleton, Stack } from '@mantine/core';
+import {
+  ActionIcon,
+  Flex,
+  Group,
+  Paper,
+  Skeleton,
+  Stack,
+  Tooltip
+} from '@mantine/core';
+import { useLocalStorage } from '@mantine/hooks';
 import {
   IconCalendar,
   IconInfoCircle,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
   IconListDetails,
   IconPackages,
   IconSitemap,
@@ -56,8 +68,6 @@ import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import { PartListTable } from '../../tables/part/PartTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
-import StockLocationParametricTable from '../../tables/stock/StockLocationParametricTable';
-import { StockLocationTable } from '../../tables/stock/StockLocationTable';
 import TransferOrderParametricTable from '../../tables/stock/TransferOrderParametricTable';
 import { TransferOrderTable } from '../../tables/stock/TransferOrderTable';
 
@@ -90,7 +100,12 @@ export default function Stock() {
   const settings = useUserSettingsState();
   const globalSettings = useGlobalSettingsState();
 
-  const [treeOpen, setTreeOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useLocalStorage<boolean>({
+    key: 'stock-location-filter-open',
+    defaultValue: true,
+    getInitialValueInEffect: false,
+    sync: false
+  });
 
   const {
     instance: location,
@@ -192,7 +207,6 @@ export default function Stock() {
     );
   }, [location, instanceQuery]);
 
-  const [sublocationView, setSublocationView] = useState<string>('table');
   const [transferOrderView, setTransferOrderView] = useState<string>('table');
 
   const locationPanels: PanelType[] = useMemo(() => {
@@ -204,32 +218,6 @@ export default function Stock() {
         content: detailsPanel,
         hidden: !location?.pk
       },
-      SegmentedControlPanel({
-        name: 'sublocations',
-        label: id ? t`Sublocations` : t`Stock Locations`,
-        icon: <IconSitemap />,
-        hidden: !user.hasViewPermission(ModelType.stocklocation),
-        selection: sublocationView,
-        onChange: setSublocationView,
-        options: [
-          {
-            value: 'table',
-            label: t`Table View`,
-            icon: <IconTable />,
-            content: <StockLocationTable parentId={id} />
-          },
-          {
-            value: 'parametric',
-            label: t`Parametric View`,
-            icon: <IconListDetails />,
-            content: (
-              <StockLocationParametricTable
-                queryParams={id ? { parent: id } : {}}
-              />
-            )
-          }
-        ]
-      }),
       {
         name: 'stock-items',
         label: t`Stock Items`,
@@ -295,7 +283,7 @@ export default function Stock() {
         hidden: !location.pk
       })
     ];
-  }, [sublocationView, transferOrderView, location, id]);
+  }, [transferOrderView, location, id]);
 
   const editLocation = useEditApiFormModal({
     url: ApiEndpoints.stock_location_list,
@@ -508,48 +496,79 @@ export default function Stock() {
         query={instanceQuery}
         requiredRole={UserRoles.stock_location}
       >
-        <Stack>
-          <NavigationTree
-            title={t`Stock Locations`}
-            modelType={ModelType.stocklocation}
-            endpoint={ApiEndpoints.stock_location_tree}
-            childIdentifier='sublocations'
-            opened={treeOpen}
-            onClose={() => setTreeOpen(false)}
-            selectedId={location?.pk}
-          />
-          <PageDetail
-            title={(location?.name ?? id) ? t`Stock Location` : t`Stock`}
-            subtitle={location?.description}
-            icon={location?.icon && <ApiIcon name={location?.icon} />}
-            actions={location?.pk ? locationActions : undefined}
-            editAction={editLocation.open}
-            editEnabled={
-              !!location?.pk &&
-              user.hasChangePermission(ModelType.stocklocation)
-            }
-            breadcrumbs={breadcrumbs}
-            lastCrumb={[
-              {
-                name: location.name,
-                url: `/stock/location/${location.pk}/`
+        <Flex align='flex-start' gap='sm' wrap='nowrap'>
+          {filterOpen ? (
+            <Paper withBorder p='xs' style={{ width: 280, flexShrink: 0 }}>
+              <Group justify='space-between' wrap='nowrap' mb='xs'>
+                <Group gap='xs' wrap='nowrap'>
+                  <IconSitemap size={18} />
+                  <StylishText size='sm'>{t`Filter by Location`}</StylishText>
+                </Group>
+                <Tooltip label={t`Hide location filter`} position='right'>
+                  <ActionIcon
+                    variant='subtle'
+                    onClick={() => setFilterOpen(false)}
+                    aria-label='collapse-location-filter'
+                  >
+                    <IconLayoutSidebarLeftCollapse />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+              <NavigationTree
+                inline
+                title={t`Stock Locations`}
+                modelType={ModelType.stocklocation}
+                endpoint={ApiEndpoints.stock_location_tree}
+                childIdentifier='sublocations'
+                selectedId={location?.pk}
+              />
+            </Paper>
+          ) : (
+            <Tooltip label={t`Show location filter`} position='right'>
+              <ActionIcon
+                variant='subtle'
+                mt='xs'
+                onClick={() => setFilterOpen(true)}
+                aria-label='expand-location-filter'
+              >
+                <IconLayoutSidebarLeftExpand />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Stack gap='xs' style={{ flexGrow: 1, minWidth: 0 }}>
+            <PageDetail
+              title={(location?.name ?? id) ? t`Stock Location` : t`Stock`}
+              subtitle={location?.description}
+              icon={location?.icon && <ApiIcon name={location?.icon} />}
+              actions={location?.pk ? locationActions : undefined}
+              editAction={editLocation.open}
+              editEnabled={
+                !!location?.pk &&
+                user.hasChangePermission(ModelType.stocklocation)
               }
-            ]}
-            breadcrumbAction={() => {
-              setTreeOpen(true);
-            }}
-          />
-          <PanelGroup
-            pageKey='stocklocation'
-            panels={locationPanels}
-            model={ModelType.stocklocation}
-            reloadInstance={refreshInstance}
-            id={location?.pk}
-            instance={location}
-            pluginPanelWithoutId
-            defaultPanel={defaultPanel}
-          />
-        </Stack>
+              breadcrumbs={breadcrumbs}
+              lastCrumb={[
+                {
+                  name: location.name,
+                  url: `/stock/location/${location.pk}/`
+                }
+              ]}
+              breadcrumbAction={() => {
+                setFilterOpen(true);
+              }}
+            />
+            <PanelGroup
+              pageKey='stocklocation'
+              panels={locationPanels}
+              model={ModelType.stocklocation}
+              reloadInstance={refreshInstance}
+              id={location?.pk}
+              instance={location}
+              pluginPanelWithoutId
+              defaultPanel={defaultPanel}
+            />
+          </Stack>
+        </Flex>
         {stockAdjustActions.modals.map((modal) => modal.modal)}
       </InstanceDetail>
     </>
