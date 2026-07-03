@@ -216,7 +216,7 @@ export default function Stock() {
         label: t`Location Details`,
         icon: <IconInfoCircle />,
         content: detailsPanel,
-        hidden: !location?.pk
+        hidden: true
       },
       {
         name: 'stock-items',
@@ -266,7 +266,7 @@ export default function Stock() {
         name: 'default_parts',
         label: t`Default Parts`,
         icon: <IconPackages />,
-        hidden: !location.pk,
+        hidden: true,
         content: (
           <PartListTable
             props={{
@@ -280,7 +280,7 @@ export default function Stock() {
       ParametersPanel({
         model_type: ModelType.stocklocation,
         model_id: location.pk,
-        hidden: !location.pk
+        hidden: true
       })
     ];
   }, [transferOrderView, location, id]);

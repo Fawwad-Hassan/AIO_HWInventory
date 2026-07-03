@@ -18,8 +18,6 @@ export function Thumbnail({
   hover,
   hoverSize = 128
 }: Readonly<ThumbnailProps>) {
-  const backup_image = '/static/img/blank_image.png';
-
   const inner = useMemo(() => {
     if (link) {
       return (
@@ -34,7 +32,7 @@ export function Thumbnail({
 
   return (
     <HoverCard
-      disabled={!hover}
+      disabled={!hover || !src}
       withinPortal
       shadow='xs'
       openDelay={300}
@@ -42,20 +40,24 @@ export function Thumbnail({
     >
       <HoverCard.Target>
         <Group align={align ?? 'left'} gap='xs' wrap='nowrap'>
-          <ApiImage
-            src={src || backup_image}
-            aria-label={alt}
-            w={size}
-            fit='contain'
-            radius='xs'
-            style={{ maxHeight: size, height: size }}
-          />
+          {/* Only render an image when one has actually been uploaded -
+              empty placeholder images are intentionally not shown. */}
+          {src && (
+            <ApiImage
+              src={src}
+              aria-label={alt}
+              w={size}
+              fit='contain'
+              radius='xs'
+              style={{ maxHeight: size, height: size }}
+            />
+          )}
           {inner}
         </Group>
       </HoverCard.Target>
       <HoverCard.Dropdown>
         <Image
-          src={src || backup_image}
+          src={src ?? ''}
           alt={alt}
           w={hoverSize}
           fit='contain'

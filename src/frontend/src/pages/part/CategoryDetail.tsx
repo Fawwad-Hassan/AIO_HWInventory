@@ -315,7 +315,7 @@ export default function CategoryDetail() {
         label: t`Category Details`,
         icon: <IconInfoCircle />,
         content: detailsPanel,
-        hidden: !id || !category?.pk
+        hidden: true
       },
       SegmentedControlPanel({
         name: 'parts',
@@ -364,13 +364,13 @@ export default function CategoryDetail() {
       ParametersPanel({
         model_type: ModelType.partcategory,
         model_id: category?.pk,
-        hidden: !id || !category.pk
+        hidden: true
       }),
       {
         name: 'category_parameters',
         label: t`Parameter Templates`,
         icon: <IconListCheck />,
-        hidden: !id || !category.pk,
+        hidden: true,
         content: <PartCategoryTemplateTable categoryId={category?.pk} />
       }
     ],
