@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { Stack } from '@mantine/core';
+import { Accordion, Stack } from '@mantine/core';
 import {
   IconBuildingFactory2,
   IconBuildingStore,
@@ -36,7 +36,6 @@ import { ManufacturerPartTable } from '../../tables/purchasing/ManufacturerPartT
 import PurchaseOrderFilters from '../../tables/purchasing/PurchaseOrderFilters';
 import PurchaseOrderParametricTable from '../../tables/purchasing/PurchaseOrderParametricTable';
 import { PurchaseOrderTable } from '../../tables/purchasing/PurchaseOrderTable';
-import SupplierPartParametricTable from '../../tables/purchasing/SupplierPartParametricTable';
 import { SupplierPartTable } from '../../tables/purchasing/SupplierPartTable';
 import BudgetDashboard from './BudgetDashboard';
 
@@ -73,11 +72,6 @@ export default function PurchasingIndex() {
     defaultValue: 'table'
   });
 
-  const [supplierView, setSupplierView] = useLocalStorage<string>({
-    key: 'supplier-view',
-    defaultValue: 'table'
-  });
-
   const [manufacturerView, setManufacturerView] = useLocalStorage<string>({
     key: 'manufacturer-view',
     defaultValue: 'table'
@@ -88,11 +82,6 @@ export default function PurchasingIndex() {
       key: 'manufacturer-parts-view',
       defaultValue: 'table'
     });
-
-  const [supplierPartsView, setSupplierPartsView] = useLocalStorage<string>({
-    key: 'supplier-parts-view',
-    defaultValue: 'table'
-  });
 
   const panels = useMemo(() => {
     // Prepend an at-a-glance summary strip to a panel's content
@@ -134,25 +123,7 @@ export default function PurchasingIndex() {
         endpoint: ApiEndpoints.company_list,
         params: { is_supplier: true }
       },
-      {
-        title: t`Supplier Parts`,
-        endpoint: ApiEndpoints.supplier_part_list
-      },
-      {
-        title: t`Outstanding Orders`,
-        endpoint: ApiEndpoints.purchase_order_list,
-        params: { outstanding: true },
-        color: 'teal'
-      }
-    ];
-
-    const supplierPartMetrics: SummaryMetric[] = [
       { title: t`Supplier Parts`, endpoint: ApiEndpoints.supplier_part_list },
-      {
-        title: t`Suppliers`,
-        endpoint: ApiEndpoints.company_list,
-        params: { is_supplier: true }
-      },
       {
         title: t`Purchaseable Parts`,
         endpoint: ApiEndpoints.part_list,
@@ -198,62 +169,42 @@ export default function PurchasingIndex() {
         }),
         poMetrics
       ),
-      wrapWithSummary(
-        SegmentedControlPanel({
-          name: 'suppliers',
-          label: t`Suppliers`,
-          icon: <IconBuildingStore />,
-          selection: supplierView,
-          onChange: setSupplierView,
-          options: [
-            {
-              value: 'table',
-              label: t`Table View`,
-              icon: <IconTable />,
-              content: (
-                <CompanyTable
-                  companyType='supplier'
-                  path='purchasing/supplier'
-                  params={{ is_supplier: true }}
-                />
-              )
-            },
-            {
-              value: 'parametric',
-              label: t`Parametric View`,
-              icon: <IconListDetails />,
-              content: (
-                <ParametricCompanyTable queryParams={{ is_supplier: true }} />
-              )
-            }
-          ]
-        }),
-        supplierMetrics
-      ),
-      wrapWithSummary(
-        SegmentedControlPanel({
-          name: 'supplier-parts',
-          label: t`Supplier Parts`,
-          icon: <IconPackageExport />,
-          selection: supplierPartsView,
-          onChange: setSupplierPartsView,
-          options: [
-            {
-              value: 'table',
-              label: t`Table View`,
-              icon: <IconTable />,
-              content: <SupplierPartTable />
-            },
-            {
-              value: 'parametric',
-              label: t`Parametric View`,
-              icon: <IconListDetails />,
-              content: <SupplierPartParametricTable />
-            }
-          ]
-        }),
-        supplierPartMetrics
-      ),
+      {
+        name: 'suppliers',
+        label: t`Suppliers & Parts`,
+        icon: <IconBuildingStore />,
+        content: (
+          <Stack gap='sm'>
+            <SummaryStrip metrics={supplierMetrics} />
+            <Accordion
+              multiple
+              defaultValue={['suppliers', 'supplier-parts']}
+              variant='separated'
+            >
+              <Accordion.Item value='suppliers'>
+                <Accordion.Control icon={<IconBuildingStore />}>
+                  {t`Suppliers`}
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <CompanyTable
+                    companyType='supplier'
+                    path='purchasing/supplier'
+                    params={{ is_supplier: true }}
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value='supplier-parts'>
+                <Accordion.Control icon={<IconPackageExport />}>
+                  {t`Supplier Parts`}
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <SupplierPartTable />
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Stack>
+        )
+      },
       SegmentedControlPanel({
         name: 'manufacturer',
         label: t`Manufacturers`,
@@ -307,14 +258,7 @@ export default function PurchasingIndex() {
         ]
       })
     ];
-  }, [
-    user,
-    manufacturerPartsView,
-    manufacturerView,
-    purchaseOrderView,
-    supplierPartsView,
-    supplierView
-  ]);
+  }, [user, manufacturerPartsView, manufacturerView, purchaseOrderView]);
 
   if (!user.isLoggedIn() || !user.hasViewRole(UserRoles.purchase_order)) {
     return <PermissionDenied />;
