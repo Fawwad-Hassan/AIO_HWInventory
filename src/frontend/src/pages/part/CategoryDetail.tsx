@@ -15,10 +15,8 @@ import {
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconListCheck,
-  IconListDetails,
   IconPackages,
-  IconSitemap,
-  IconTable
+  IconSitemap
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -49,7 +47,6 @@ import NavigationTree from '../../components/nav/NavigationTree';
 import { PageDetail } from '../../components/nav/PageDetail';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import ParametersPanel from '../../components/panels/ParametersPanel';
-import SegmentedControlPanel from '../../components/panels/SegmentedControlPanel';
 import { partCategoryFields } from '../../forms/PartForms';
 import {
   useDeleteApiFormModal,
@@ -58,7 +55,6 @@ import {
 import { useInstance } from '../../hooks/UseInstance';
 import { useUserSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
-import ParametricPartTable from '../../tables/part/ParametricPartTable';
 import PartCategoryTemplateTable from '../../tables/part/PartCategoryTemplateTable';
 import { PartListTable } from '../../tables/part/PartTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
@@ -279,11 +275,6 @@ export default function CategoryDetail() {
     ];
   }, [id, user, category.pk, category.starred]);
 
-  const [partsView, setPartsView] = useLocalStorage<string>({
-    key: 'category-parts-view',
-    defaultValue: 'table'
-  });
-
   const panels: PanelType[] = useMemo(
     () => [
       {
@@ -293,35 +284,20 @@ export default function CategoryDetail() {
         content: detailsPanel,
         hidden: true
       },
-      SegmentedControlPanel({
+      {
         name: 'parts',
         label: t`Parts`,
         icon: <IconCategory />,
-        selection: partsView,
-        onChange: setPartsView,
-        options: [
-          {
-            value: 'table',
-            label: t`Table View`,
-            icon: <IconTable />,
-            content: (
-              <PartListTable
-                props={{
-                  params: {
-                    category: id
-                  }
-                }}
-              />
-            )
-          },
-          {
-            value: 'parametric',
-            label: t`Parametric View`,
-            icon: <IconListDetails />,
-            content: <ParametricPartTable categoryId={id} />
-          }
-        ]
-      }),
+        content: (
+          <PartListTable
+            props={{
+              params: {
+                category: id
+              }
+            }}
+          />
+        )
+      },
       {
         name: 'stockitem',
         label: t`Stock Items`,
@@ -350,7 +326,7 @@ export default function CategoryDetail() {
         content: <PartCategoryTemplateTable categoryId={category?.pk} />
       }
     ],
-    [category, id, partsView]
+    [category, id]
   );
 
   const breadcrumbs = useMemo(
