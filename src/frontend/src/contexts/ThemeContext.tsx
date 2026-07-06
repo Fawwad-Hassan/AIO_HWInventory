@@ -3,7 +3,8 @@ import { Trans } from '@lingui/react';
 import {
   MantineProvider,
   type MantineThemeOverride,
-  createTheme
+  createTheme,
+  mergeThemeOverrides
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
@@ -16,6 +17,7 @@ import { LicenseModal } from '../components/modals/LicenseModal';
 import { QrModal } from '../components/modals/QrModal';
 import { ServerInfoModal } from '../components/modals/ServerInfoModal';
 import { useLocalState } from '../states/LocalState';
+import { theme as brandTheme } from '../theme';
 import { LanguageContext } from './LanguageContext';
 import { colorSchema } from './colorSchema';
 
@@ -28,11 +30,12 @@ export function ThemeContext({
 
   // Theme
   try {
-    customUserTheme = createTheme({
-      primaryColor: userTheme.primaryColor,
+    // Per-user tweaks that are safe to keep alongside the brand theme.
+    // The AIO brand theme (colors, primary colour, radius) is applied on top
+    // so the branded look is consistent regardless of stored user settings.
+    const userOverride = createTheme({
       white: userTheme.whiteColor,
       black: userTheme.blackColor,
-      defaultRadius: userTheme.radius,
       breakpoints: {
         xs: '30em',
         sm: '48em',
@@ -41,6 +44,8 @@ export function ThemeContext({
         xl: '90em'
       }
     });
+
+    customUserTheme = mergeThemeOverrides(userOverride, brandTheme);
   } catch (error) {
     console.error('Error creating theme with user settings:', error);
     // Fallback to default theme if there's an error
@@ -48,7 +53,11 @@ export function ThemeContext({
   }
 
   return (
-    <MantineProvider theme={customUserTheme} colorSchemeManager={colorSchema}>
+    <MantineProvider
+      theme={customUserTheme}
+      colorSchemeManager={colorSchema}
+      defaultColorScheme='dark'
+    >
       <ContextMenuProvider>
         <LanguageContext>
           <ModalsProvider

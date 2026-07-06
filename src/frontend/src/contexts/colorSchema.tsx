@@ -22,16 +22,14 @@ export function localStorageColorSchemeManager({
       try {
         const storedValue = window.localStorage.getItem(key);
 
-        // If a value exists in storage, return it
+        // If a value exists in storage, return it (respects the user's toggle)
         if (storedValue && isMantineColorScheme(storedValue)) {
           return storedValue;
         }
 
-        // If no value, check the system preference
-        const systemPrefersDark = window.matchMedia(
-          '(prefers-color-scheme: dark)'
-        ).matches;
-        return systemPrefersDark ? 'dark' : 'light';
+        // Otherwise default to dark (the AIO brand default). Users can still
+        // switch to light, and their choice is remembered.
+        return 'dark';
       } catch {
         return defaultValue;
       }
