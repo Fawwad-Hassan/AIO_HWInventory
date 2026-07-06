@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import { Outlet, useNavigate } from 'react-router-dom';
 import SplashScreen from '../../components/SplashScreen';
+import { InvenTreeLogo } from '../../components/items/InvenTreeLogo';
 import { doLogout } from '../../functions/auth';
 
 export default function LoginLayoutComponent() {
@@ -44,6 +45,9 @@ export function Wrapper({
   return (
     <Paper p='xl' withBorder miw={425} shadow='lg'>
       <Stack gap={smallPadding ? 0 : 'md'}>
+        <Group justify='center'>
+          <InvenTreeLogo height={48} />
+        </Group>
         <StylishText size='xl'>{titleText}</StylishText>
         <Divider p='xs' />
         {loader && (

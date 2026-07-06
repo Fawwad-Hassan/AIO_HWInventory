@@ -23,6 +23,7 @@ import './styles/overrides.css';
 
 import { getBaseUrl } from '@lib/functions/Navigation';
 import type { HostList } from '@lib/types/Server';
+import aioFavicon from './components/items/aio_favicon.png';
 import MainView from './views/MainView';
 import { loadWindowGlobals } from './window';
 
@@ -110,6 +111,14 @@ if (window.INVENTREE_SETTINGS.sentry_dsn) {
     environment: window.INVENTREE_SETTINGS.environment || 'default'
   });
 }
+// Set the browser tab favicon to the AIO mark
+const faviconEl = document.getElementById(
+  'app-favicon'
+) as HTMLLinkElement | null;
+if (faviconEl) {
+  faviconEl.href = aioFavicon;
+}
+
 // Redirect to base url if on /
 if (window.location.pathname === '/') {
   window.location.replace(`/${getBaseUrl()}`);
