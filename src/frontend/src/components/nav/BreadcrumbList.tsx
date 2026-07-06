@@ -1,12 +1,4 @@
-import {
-  ActionIcon,
-  Anchor,
-  Breadcrumbs,
-  Group,
-  Paper,
-  Text
-} from '@mantine/core';
-import { IconMenu2 } from '@tabler/icons-react';
+import { Anchor, Breadcrumbs, Group, Paper, Text } from '@mantine/core';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,8 +15,7 @@ export type Breadcrumb = {
  * Construct a breadcrumb list, with integrated navigation.
  */
 export function BreadcrumbList({
-  breadcrumbs,
-  navCallback
+  breadcrumbs
 }: Readonly<{
   breadcrumbs: Breadcrumb[];
   navCallback?: () => void;
@@ -49,16 +40,6 @@ export function BreadcrumbList({
   return (
     <Paper p='7' radius='xs' shadow='xs'>
       <Group gap='xs'>
-        {navCallback && (
-          <ActionIcon
-            key='nav-breadcrumb-action'
-            aria-label='nav-breadcrumb-action'
-            onClick={navCallback}
-            variant='transparent'
-          >
-            <IconMenu2 />
-          </ActionIcon>
-        )}
         <Breadcrumbs key='breadcrumbs' separator='>'>
           {elements.map((breadcrumb, index) => {
             return (
