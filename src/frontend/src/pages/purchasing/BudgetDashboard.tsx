@@ -1,8 +1,10 @@
 import { t } from '@lingui/core/macro';
 import { BarChart, DonutChart } from '@mantine/charts';
 import {
+  Box,
   Card,
   Center,
+  Group,
   Loader,
   Paper,
   SimpleGrid,
@@ -238,21 +240,39 @@ export default function BudgetDashboard() {
               { name: 'Capital', label: t`Capital`, color: 'orange.6' }
             ]}
             valueFormatter={(v) => fmt(v)}
+            withLegend
+            legendProps={{ verticalAlign: 'top', height: 40 }}
           />
         </Paper>
         <Paper withBorder p='md' radius='md'>
           <Title order={5} mb='sm'>
             {t`Spend by department`}
           </Title>
-          <Center>
+          <Group justify='center' align='center' gap='xl' wrap='nowrap'>
             <DonutChart
               data={analysis.deptData}
-              size={240}
+              size={200}
               thickness={40}
               withLabelsLine={false}
               valueFormatter={(v) => fmt(v)}
             />
-          </Center>
+            <Stack gap={6}>
+              {analysis.deptData.map((d) => (
+                <Group key={d.name} gap='xs' wrap='nowrap'>
+                  <Box
+                    w={12}
+                    h={12}
+                    bg={d.color}
+                    style={{ borderRadius: 3, flexShrink: 0 }}
+                  />
+                  <Text size='sm'>{d.name}</Text>
+                  <Text size='xs' c='dimmed'>
+                    {fmt(d.value)}
+                  </Text>
+                </Group>
+              ))}
+            </Stack>
+          </Group>
         </Paper>
       </SimpleGrid>
 
