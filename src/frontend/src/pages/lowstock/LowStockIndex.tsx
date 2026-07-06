@@ -15,10 +15,7 @@ import { PartListTable } from '../../tables/part/PartTable';
 export default function LowStockIndex() {
   return (
     <Stack>
-      <PageDetail
-        title={t`Low Stock`}
-        breadcrumbs={[{ name: t`Low Stock`, url: '/low-stock' }]}
-      />
+      <PageDetail title={t`Low Stock`} />
       <PartListTable
         tableName='low-stock'
         enableImport={false}
