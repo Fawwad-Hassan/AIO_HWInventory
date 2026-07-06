@@ -34,7 +34,6 @@ import {
 } from 'react-router-dom';
 
 import { Boundary } from '@lib/components/Boundary';
-import { StylishText } from '@lib/components/StylishText';
 import type { ModelType, PluginPanelKey } from '@lib/enums/ModelType';
 import { identifierString } from '@lib/functions/Conversion';
 import {
@@ -443,18 +442,10 @@ function BasePanelGroup({
                   }}
                 >
                   <Stack gap='md'>
-                    {panel.showHeadline !== false && (
-                      <>
-                        <Group justify='space-between'>
-                          <StylishText size='xl'>{panel.label}</StylishText>
-                          {panel.controls && (
-                            <Group justify='right' wrap='nowrap'>
-                              {panel.controls}
-                            </Group>
-                          )}
-                        </Group>
-                        <Divider />
-                      </>
+                    {panel.controls && (
+                      <Group justify='right' wrap='nowrap'>
+                        {panel.controls}
+                      </Group>
                     )}
                     <Boundary label={`PanelContent-${panel.name}`}>
                       {getPanelContent(panel.content, panel, setIsDirty)}
