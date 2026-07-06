@@ -3,8 +3,6 @@ import { ActionIcon, useComputedColorScheme } from '@mantine/core';
 import { type ReactNode, forwardRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { useShallow } from 'zustand/react/shallow';
-import { useServerApiState } from '../../states/ServerApiState';
 import aioLogoDark from './aio_logo_dark.png';
 import aioLogoLight from './aio_logo_light.png';
 
@@ -23,9 +21,10 @@ export const InvenTreeLogoHomeButton = forwardRef<HTMLDivElement>(
 );
 
 /*
- * Render the AIO logo
- * - Uses the custom logo if one is defined on the server
- * - Otherwise, uses the AIO brand mark (white on dark, dark on light)
+ * Render the AIO brand mark (white on dark, charcoal on light).
+ *
+ * Note: we intentionally always use the AIO mark and do NOT fall back to the
+ * server's "customize.logo" (which defaults to the InvenTree logo).
  */
 export function InvenTreeLogo({
   height = 28
@@ -33,16 +32,6 @@ export function InvenTreeLogo({
   height?: number;
 } = {}): ReactNode {
   const computedColorScheme = useComputedColorScheme('dark');
-
-  const [server] = useServerApiState(
-    useShallow((state) => [state.server, state.fetchServerApiState])
-  );
-
-  if (server.server && server.customize?.logo) {
-    return (
-      <img src={server.customize.logo} alt={t`AIO Logo`} height={height} />
-    );
-  }
 
   const logo = computedColorScheme === 'dark' ? aioLogoDark : aioLogoLight;
 
