@@ -16,12 +16,14 @@ export default function PageTitle({
   const pageTitle = useMemo(() => {
     const instanceName = globalSettings.getSetting(
       'INVENTREE_INSTANCE',
-      'InvenTree'
+      'AIO Inventory'
     );
-    const useInstanceName = globalSettings.isSet(
-      'INVENTREE_INSTANCE_TITLE',
-      false
-    );
+
+    // Use the AIO brand name unless a custom instance name has been set
+    const brand =
+      !instanceName || instanceName === 'InvenTree'
+        ? 'AIO Inventory'
+        : instanceName;
 
     let data = '';
 
@@ -33,14 +35,8 @@ export default function PageTitle({
       data += ` - ${subtitle}`;
     }
 
-    if (useInstanceName) {
-      data = `${instanceName} | ${data}`;
-    }
-
-    if (!data) {
-      // Backup: No title provided
-      data = instanceName;
-    }
+    // Always show the brand name in the browser tab title
+    data = data ? `${brand} | ${data}` : brand;
 
     return data;
   }, [title, subtitle, globalSettings]);
