@@ -28,7 +28,6 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import { getDetailUrl } from '@lib/functions/Navigation';
-import type { StockOperationProps } from '@lib/types/Forms';
 import type { PanelType } from '@lib/types/Panel';
 import { useLocalStorage } from '@mantine/hooks';
 import AdminButton from '../../components/buttons/AdminButton';
@@ -57,7 +56,6 @@ import {
   useEditApiFormModal
 } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
-import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
 import { useUserSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import ParametricPartTable from '../../tables/part/ParametricPartTable';
@@ -99,28 +97,6 @@ export default function CategoryDetail() {
     params: {
       path_detail: true
     }
-  });
-
-  const stockOperationProps: StockOperationProps = useMemo(() => {
-    return {
-      refresh: refreshInstance,
-      filters: {
-        category: category.pk,
-        in_stock: true
-      }
-    };
-  }, [category]);
-
-  const stockAdjustActions = useStockAdjustActions({
-    formProps: stockOperationProps,
-    enabled: true,
-    add: false,
-    remove: false,
-    changeStatus: false,
-    changeBatch: false,
-    delete: false,
-    merge: false,
-    assign: false
   });
 
   const detailsPanel = useMemo(() => {
@@ -284,7 +260,6 @@ export default function CategoryDetail() {
           refreshInstance();
         }}
       />,
-      stockAdjustActions.dropdown,
       <OptionsActionDropdown
         key='category-actions'
         tooltip={t`Category Actions`}
@@ -302,7 +277,7 @@ export default function CategoryDetail() {
         ]}
       />
     ];
-  }, [id, user, category.pk, category.starred, stockAdjustActions.dropdown]);
+  }, [id, user, category.pk, category.starred]);
 
   const [partsView, setPartsView] = useLocalStorage<string>({
     key: 'category-parts-view',
@@ -405,7 +380,6 @@ export default function CategoryDetail() {
     <>
       {editCategory.modal}
       {deleteCategory.modal}
-      {stockAdjustActions.modals.map((modal) => modal.modal)}
       <InstanceDetail
         query={instanceQuery}
         requiredRole={UserRoles.part_category}
