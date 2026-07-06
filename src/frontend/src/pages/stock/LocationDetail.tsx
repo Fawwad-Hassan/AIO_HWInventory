@@ -36,6 +36,7 @@ import { useBarcodeScanDialog } from '../../components/barcodes/BarcodeScanDialo
 import AdminButton from '../../components/buttons/AdminButton';
 import { PrintingActions } from '../../components/buttons/PrintingActions';
 import OrderCalendar from '../../components/calendar/OrderCalendar';
+import SummaryStrip from '../../components/dashboard/SummaryStrip';
 import {
   type DetailsField,
   DetailsTable
@@ -557,6 +558,34 @@ export default function Stock() {
                 setFilterOpen(true);
               }}
             />
+            {!location?.pk && (
+              <SummaryStrip
+                metrics={[
+                  {
+                    title: t`Stock Items`,
+                    endpoint: ApiEndpoints.stock_item_list,
+                    params: { in_stock: true }
+                  },
+                  {
+                    title: t`Locations`,
+                    endpoint: ApiEndpoints.stock_location_list
+                  },
+                  {
+                    title: t`Low Stock`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true, low_stock: true },
+                    color: 'orange',
+                    link: '/low-stock'
+                  },
+                  {
+                    title: t`Out of Stock`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true, has_stock: false },
+                    color: 'red'
+                  }
+                ]}
+              />
+            )}
             <PanelGroup
               pageKey='stocklocation'
               panels={locationPanels}

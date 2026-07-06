@@ -33,6 +33,7 @@ import type { PanelType } from '@lib/types/Panel';
 import { useLocalStorage } from '@mantine/hooks';
 import AdminButton from '../../components/buttons/AdminButton';
 import StarredToggleButton from '../../components/buttons/StarredToggleButton';
+import SummaryStrip from '../../components/dashboard/SummaryStrip';
 import {
   type DetailsField,
   DetailsTable
@@ -465,6 +466,36 @@ export default function CategoryDetail() {
                 user.hasChangePermission(ModelType.partcategory)
               }
             />
+            {!category?.pk && (
+              <SummaryStrip
+                metrics={[
+                  {
+                    title: t`Total Parts`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true }
+                  },
+                  {
+                    title: t`In Stock`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true, has_stock: true },
+                    color: 'teal'
+                  },
+                  {
+                    title: t`Low Stock`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true, low_stock: true },
+                    color: 'orange',
+                    link: '/low-stock'
+                  },
+                  {
+                    title: t`Out of Stock`,
+                    endpoint: ApiEndpoints.part_list,
+                    params: { active: true, has_stock: false },
+                    color: 'red'
+                  }
+                ]}
+              />
+            )}
             <PanelGroup
               pageKey='partcategory'
               panels={panels}
