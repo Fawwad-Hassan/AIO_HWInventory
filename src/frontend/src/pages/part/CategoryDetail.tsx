@@ -454,7 +454,7 @@ export default function CategoryDetail() {
               title={(category?.name ?? id) ? t`Part Category` : t`Parts`}
               subtitle={category?.description}
               icon={category?.icon && <ApiIcon name={category?.icon} />}
-              breadcrumbs={breadcrumbs}
+              breadcrumbs={category?.pk ? breadcrumbs : []}
               breadcrumbAction={() => {
                 setFilterOpen(true);
               }}

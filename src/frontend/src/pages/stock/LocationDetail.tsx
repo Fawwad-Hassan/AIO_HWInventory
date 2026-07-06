@@ -546,7 +546,7 @@ export default function Stock() {
                 !!location?.pk &&
                 user.hasChangePermission(ModelType.stocklocation)
               }
-              breadcrumbs={breadcrumbs}
+              breadcrumbs={location?.pk ? breadcrumbs : []}
               lastCrumb={[
                 {
                   name: location.name,

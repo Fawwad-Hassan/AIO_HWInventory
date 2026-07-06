@@ -371,61 +371,63 @@ function BasePanelGroup({
           aria-label={`panel-group-${pageKey}`}
           classNames={{ tab: classes.selectedPanelTab }}
         >
-          <Tabs.List justify='left' aria-label={`panel-tabs-${pageKey}`}>
-            {groupedPanels.map((group) => (
-              <Box key={`group-${group.id}`} w={'100%'}>
-                <Text
-                  hidden={!group.label || !expanded}
-                  c={vars.colors.primaryColors[7]}
-                  key={`group-label-${group.id}`}
-                  style={{
-                    paddingLeft: '10px'
-                  }}
-                >
-                  {group.label}
-                </Text>
-                {group.label && <Divider c={vars.colors.primaryColors[7]} />}
-                {group.panels?.map(
-                  (panel) =>
-                    !panel.hidden && (
-                      <PanelTabComponent
-                        key={`panel-tab-${group.id}-${panel.name}`}
-                        expanded={expanded}
-                        panel={panel}
-                        onClick={(event: any) =>
-                          handlePanelChange(panel.name, event)
-                        }
-                      />
-                    )
-                )}
-              </Box>
-            ))}
-            {collapsible && <Divider />}
-            {collapsible && (
-              <Group wrap='nowrap' gap='xs'>
-                <Tooltip
-                  position='right'
-                  label={expanded ? t`Collapse panels` : t`Expand panels`}
-                >
-                  <ActionIcon
+          {activePanels.length > 1 && (
+            <Tabs.List justify='left' aria-label={`panel-tabs-${pageKey}`}>
+              {groupedPanels.map((group) => (
+                <Box key={`group-${group.id}`} w={'100%'}>
+                  <Text
+                    hidden={!group.label || !expanded}
+                    c={vars.colors.primaryColors[7]}
+                    key={`group-label-${group.id}`}
                     style={{
                       paddingLeft: '10px'
                     }}
-                    onClick={() => setExpanded(!expanded)}
-                    variant='transparent'
-                    size='lg'
                   >
-                    {expanded ? (
-                      <IconLayoutSidebarLeftCollapse opacity={0.75} />
-                    ) : (
-                      <IconLayoutSidebarRightCollapse opacity={0.75} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
-                {pluginPanelSet.isLoading && <Loader size='xs' />}
-              </Group>
-            )}
-          </Tabs.List>
+                    {group.label}
+                  </Text>
+                  {group.label && <Divider c={vars.colors.primaryColors[7]} />}
+                  {group.panels?.map(
+                    (panel) =>
+                      !panel.hidden && (
+                        <PanelTabComponent
+                          key={`panel-tab-${group.id}-${panel.name}`}
+                          expanded={expanded}
+                          panel={panel}
+                          onClick={(event: any) =>
+                            handlePanelChange(panel.name, event)
+                          }
+                        />
+                      )
+                  )}
+                </Box>
+              ))}
+              {collapsible && <Divider />}
+              {collapsible && (
+                <Group wrap='nowrap' gap='xs'>
+                  <Tooltip
+                    position='right'
+                    label={expanded ? t`Collapse panels` : t`Expand panels`}
+                  >
+                    <ActionIcon
+                      style={{
+                        paddingLeft: '10px'
+                      }}
+                      onClick={() => setExpanded(!expanded)}
+                      variant='transparent'
+                      size='lg'
+                    >
+                      {expanded ? (
+                        <IconLayoutSidebarLeftCollapse opacity={0.75} />
+                      ) : (
+                        <IconLayoutSidebarRightCollapse opacity={0.75} />
+                      )}
+                    </ActionIcon>
+                  </Tooltip>
+                  {pluginPanelSet.isLoading && <Loader size='xs' />}
+                </Group>
+              )}
+            </Tabs.List>
+          )}
           {allPanels.map(
             (panel) =>
               !panel.hidden && (
