@@ -18,7 +18,14 @@ import { doLogout } from '../../functions/auth';
 export default function LoginLayoutComponent() {
   return (
     <SplashScreen>
-      <Center mih='100vh' p='lg'>
+      <Center
+        mih='100vh'
+        p='lg'
+        style={{
+          background:
+            'linear-gradient(120deg, #f9694e 0%, #b974a1 55%, #8a73cb 100%)'
+        }}
+      >
         <Container>
           <Outlet />
         </Container>
