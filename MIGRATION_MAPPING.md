@@ -99,3 +99,8 @@ fields were added to the create/edit form.
   into the Phase 2 field.
 - **Unmapped in old data:** Owner, Assigned To, Manufacturer are empty in the old
   export; they'll be blank on import unless supplied separately.
+- **Purchaseable flag.** Import **all** parts with `Part.purchaseable = False`
+  (off). The owner will then manually turn on "Purchaseable" for the select few
+  items that are actually re-purchased. Make sure the import does not set
+  `purchaseable = true`, and that the `PART_PURCHASEABLE` default setting is off
+  while importing so newly-created parts default to not-purchaseable.
