@@ -7,6 +7,7 @@ import {
   IconCalendar,
   IconListDetails,
   IconPackageExport,
+  IconReportMoney,
   IconShoppingCart,
   IconTable
 } from '@tabler/icons-react';
@@ -33,6 +34,7 @@ import PurchaseOrderParametricTable from '../../tables/purchasing/PurchaseOrderP
 import { PurchaseOrderTable } from '../../tables/purchasing/PurchaseOrderTable';
 import SupplierPartParametricTable from '../../tables/purchasing/SupplierPartParametricTable';
 import { SupplierPartTable } from '../../tables/purchasing/SupplierPartTable';
+import BudgetDashboard from './BudgetDashboard';
 
 function PurchaseOrderCalendar() {
   const calendarFilters: TableFilter[] = useMemo(() => {
@@ -90,6 +92,12 @@ export default function PurchasingIndex() {
 
   const panels = useMemo(() => {
     return [
+      {
+        name: 'budget',
+        label: t`Budget`,
+        icon: <IconReportMoney />,
+        content: <BudgetDashboard />
+      },
       SegmentedControlPanel({
         name: 'purchaseorders',
         label: t`Purchase Orders`,
