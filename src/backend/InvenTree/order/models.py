@@ -763,25 +763,6 @@ class PurchaseOrder(TotalPriceMixin, Order):
         help_text=_('Destination for received items'),
     )
 
-    budget_type = models.CharField(
-        max_length=20,
-        blank=True,
-        default='',
-        choices=PURCHASE_BUDGET_TYPE_CHOICES,
-        verbose_name=_('Budget Type'),
-        help_text=_('Recurring consumable or one-time capital'),
-    )
-
-    department = models.ForeignKey(
-        'budget.Department',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name='purchase_orders',
-        verbose_name=_('Department'),
-        help_text=_('Department or purpose for this order'),
-    )
-
     @transaction.atomic
     def add_line_item(
         self,

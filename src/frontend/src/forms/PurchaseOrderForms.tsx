@@ -166,8 +166,8 @@ export function usePurchaseOrderLineItemFields({
           }
         }
       },
-      line: {},
-      reference: {},
+      line: { hidden: true },
+      reference: { hidden: true },
       quantity: {
         onValueChange: (value) => {
           setQuantity(value);
@@ -191,12 +191,14 @@ export function usePurchaseOrderLineItemFields({
         value: autoPricing,
         onValueChange: setAutoPricing
       },
-      project_code: ProjectCodeField(),
+      project_code: { ...ProjectCodeField(), hidden: true },
       target_date: {
-        icon: <IconCalendar />
+        icon: <IconCalendar />,
+        hidden: true
       },
       destination: {
-        icon: <IconSitemap />
+        icon: <IconSitemap />,
+        hidden: true
       },
       budget_type: {},
       department: DepartmentField(),
@@ -212,7 +214,8 @@ export function usePurchaseOrderLineItemFields({
         icon: <IconNotes />
       },
       link: {
-        icon: <IconLink />
+        icon: <IconLink />,
+        hidden: true
       }
     };
 
@@ -270,28 +273,30 @@ export function usePurchaseOrderFields({
           is_supplier: { value: true, hidden: true }
         }
       },
-      supplier_reference: {},
-      project_code: ProjectCodeField(),
+      supplier_reference: { hidden: true },
+      project_code: { ...ProjectCodeField(), hidden: true },
       order_currency: {
         icon: <IconCoins />
       },
       start_date: {
-        icon: <IconCalendar />
+        icon: <IconCalendar />,
+        hidden: true
       },
       target_date: {
-        icon: <IconCalendar />
+        icon: <IconCalendar />,
+        hidden: true
       },
       destination: {
         filters: {
           structural: false
-        }
+        },
+        hidden: true
       },
-      budget_type: {},
-      department: DepartmentField(),
-      tags: TagsField({}),
-      link: {},
+      tags: { ...TagsField({}), hidden: true },
+      link: { hidden: true },
       contact: {
         icon: <IconUser />,
+        hidden: true,
         adjustFilters: (value: ApiFormAdjustFilterType) => {
           return {
             ...value.filters,
@@ -301,6 +306,7 @@ export function usePurchaseOrderFields({
       },
       address: {
         icon: <IconAddressBook />,
+        hidden: true,
         adjustFilters: (value: ApiFormAdjustFilterType) => {
           return {
             ...value.filters,
@@ -312,7 +318,8 @@ export function usePurchaseOrderFields({
         filters: {
           is_active: true
         },
-        icon: <IconUsers />
+        icon: <IconUsers />,
+        hidden: true
       }
     };
 
