@@ -16,6 +16,7 @@ from flags.urls import flagged_path
 from oauth2_provider import urls as oauth2_urls
 from sesame.views import LoginView
 
+import budget.api
 import build.api
 import common.api
 import company.api
@@ -55,6 +56,7 @@ apipatterns = [
     path('admin/', include(common.api.admin_api_urls)),
     path('bom/', include(part.api.bom_api_urls)),
     path('build/', include(build.api.build_api_urls)),
+    path('budget/', include(budget.api.budget_api_urls)),
     path('company/', include(company.api.company_api_urls)),
     path('importer/', include(importer.api.importer_api_urls)),
     path('label/', include(report.api.label_api_urls)),
