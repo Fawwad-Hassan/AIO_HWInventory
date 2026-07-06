@@ -3,11 +3,11 @@ import { BarChart, DonutChart } from '@mantine/charts';
 import {
   Card,
   Center,
-  Group,
   Loader,
   Paper,
   SimpleGrid,
   Stack,
+  Table,
   Text,
   Title
 } from '@mantine/core';
@@ -89,7 +89,12 @@ export default function BudgetDashboard() {
     const byMonth: Record<string, { Recurring: number; Capital: number }> = {};
     const byQuarterCapital: Record<string, number> = {};
     const byDept: Record<string, number> = {};
-    const byItemRecurring: Record<string, number> = {};
+    const recurringRecs: {
+      month: string;
+      item: string;
+      qty: number;
+      base: number;
+    }[] = [];
     let totalRecurring = 0;
     let totalCapital = 0;
 
@@ -106,7 +111,12 @@ export default function BudgetDashboard() {
       } else {
         byMonth[month].Recurring += amt;
         totalRecurring += amt;
-        byItemRecurring[r.item] = (byItemRecurring[r.item] || 0) + amt;
+        recurringRecs.push({
+          month,
+          item: r.item,
+          qty: Number(r.quantity) || 0,
+          base: amt
+        });
       }
 
       const dept = r.department || t`Unspecified`;
@@ -138,10 +148,31 @@ export default function BudgetDashboard() {
         color: DEPT_COLORS[i % DEPT_COLORS.length]
       }));
 
-    const topItems = Object.entries(byItemRecurring)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([name, value]) => ({ name, value }));
+    // Top recurring items: averaged over the last 6 months of activity.
+    // For each item we compute how much is typically ordered per month, the
+    // effective unit price, and the average monthly spend.
+    const windowMonths = months.slice(-6);
+    const numMonths = windowMonths.length || 1;
+    const windowSet = new Set(windowMonths);
+    const statMap: Record<string, { qty: number; spend: number }> = {};
+    for (const rec of recurringRecs) {
+      if (!windowSet.has(rec.month)) {
+        continue;
+      }
+      const s = statMap[rec.item] || { qty: 0, spend: 0 };
+      s.qty += rec.qty;
+      s.spend += rec.base;
+      statMap[rec.item] = s;
+    }
+    const topItems = Object.entries(statMap)
+      .map(([name, s]) => ({
+        name,
+        avgQty: s.qty / numMonths,
+        unitPrice: s.qty > 0 ? s.spend / s.qty : 0,
+        avgSpend: s.spend / numMonths
+      }))
+      .sort((a, b) => b.avgSpend - a.avgSpend)
+      .slice(0, 10);
 
     return {
       total: totalRecurring + totalCapital,
@@ -150,6 +181,7 @@ export default function BudgetDashboard() {
       monthlyData,
       deptData,
       topItems,
+      windowMonthCount: windowMonths.length,
       recMonthlyRecurring,
       recQuarterlyCapital
     };
@@ -225,19 +257,40 @@ export default function BudgetDashboard() {
       </SimpleGrid>
 
       <Paper withBorder p='md' radius='md'>
-        <Title order={5} mb='sm'>
+        <Title order={5} mb={4}>
           {t`Top recurring items`}
         </Title>
-        <Stack gap={4}>
-          {analysis.topItems.map((it) => (
-            <Group key={it.name} justify='space-between'>
-              <Text size='sm'>{it.name}</Text>
-              <Text size='sm' fw={600}>
-                {fmt(it.value)}
-              </Text>
-            </Group>
-          ))}
-        </Stack>
+        <Text size='xs' c='dimmed' mb='sm'>
+          {t`Averaged over the last ${analysis.windowMonthCount} month(s) of activity`}
+        </Text>
+        <Table striped highlightOnHover withTableBorder>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>{t`Item`}</Table.Th>
+              <Table.Th ta='right'>{t`Avg qty / month`}</Table.Th>
+              <Table.Th ta='right'>{t`Unit price (PKR)`}</Table.Th>
+              <Table.Th ta='right'>{t`Avg spend / month`}</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {analysis.topItems.map((it) => (
+              <Table.Tr key={it.name}>
+                <Table.Td>{it.name}</Table.Td>
+                <Table.Td ta='right'>
+                  {it.avgQty.toLocaleString(undefined, {
+                    maximumFractionDigits: 1
+                  })}
+                </Table.Td>
+                <Table.Td ta='right'>{fmt(it.unitPrice)}</Table.Td>
+                <Table.Td ta='right'>
+                  <Text size='sm' fw={600}>
+                    {fmt(it.avgSpend)}
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
       </Paper>
 
       <Paper withBorder p='md' radius='md'>

@@ -35,6 +35,13 @@ class PurchaseRecordSerializer(serializers.ModelSerializer):
             'currency',
             'total_cost_base',
             'purchase_order',
+            'purchase_order_reference',
             'source',
             'notes',
         ]
+
+    purchase_order_reference = serializers.SerializerMethodField()
+
+    def get_purchase_order_reference(self, obj):
+        """Return the linked purchase order's reference (or None)."""
+        return obj.purchase_order.reference if obj.purchase_order else None
