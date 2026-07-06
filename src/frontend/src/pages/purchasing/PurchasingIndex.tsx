@@ -180,6 +180,7 @@ export default function PurchasingIndex() {
         name: 'manufacturer',
         label: t`Manufacturers`,
         icon: <IconBuildingFactory2 />,
+        hidden: true,
         selection: manufacturerView,
         onChange: setManufacturerView,
         options: [
@@ -209,6 +210,7 @@ export default function PurchasingIndex() {
         name: 'manufacturer-parts',
         label: t`Manufacturer Parts`,
         icon: <IconBuildingWarehouse />,
+        hidden: true,
         selection: manufacturerPartsView,
         onChange: setManufacturerPartsView,
         options: [
