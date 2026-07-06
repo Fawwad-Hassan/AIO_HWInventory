@@ -433,6 +433,8 @@ class PurchaseOrderSerializer(
             'total_price',
             'order_currency',
             'destination',
+            'budget_type',
+            'department',
             'updated_at',
         ])
         read_only_fields = [
@@ -600,6 +602,8 @@ class PurchaseOrderLineItemSerializer(
             'purchase_price_currency',
             'auto_pricing',
             'destination',
+            'budget_type',
+            'department',
             'total_price',
             'merge_items',
             'sku',

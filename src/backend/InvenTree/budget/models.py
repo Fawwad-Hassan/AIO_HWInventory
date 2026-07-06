@@ -7,7 +7,53 @@ to a real PurchaseOrder (the hook for future integration).
 """
 
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+
+class Department(models.Model):
+    """A user-defined department, used as a dropdown option on purchases.
+
+    Managed via the Admin Center so the owner can add/remove the options that
+    appear in the department dropdowns on purchase orders and line items.
+    """
+
+    class Meta:
+        """Meta options for the Department model."""
+
+        verbose_name = _('Department')
+        verbose_name_plural = _('Departments')
+        ordering = ['name']
+
+    @staticmethod
+    def get_api_url():
+        """Return the API URL associated with the Department model."""
+        return reverse('api-department-list')
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name=_('Name'),
+        help_text=_('Department name (e.g. Mechanical Lab)'),
+    )
+
+    description = models.CharField(
+        max_length=250,
+        blank=True,
+        default='',
+        verbose_name=_('Description'),
+        help_text=_('Optional description'),
+    )
+
+    active = models.BooleanField(
+        default=True,
+        verbose_name=_('Active'),
+        help_text=_('Only active departments appear in dropdowns'),
+    )
+
+    def __str__(self):
+        """String representation of a department."""
+        return self.name
 
 
 class PurchaseRecord(models.Model):

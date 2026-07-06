@@ -113,6 +113,7 @@ export enum ApiEndpoints {
 
   // Budget (custom) API endpoints
   purchase_record_list = 'budget/record/',
+  department_list = 'budget/department/',
 
   // Part API endpoints
   part_list = 'part/',

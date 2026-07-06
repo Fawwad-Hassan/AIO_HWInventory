@@ -2,7 +2,17 @@
 
 from rest_framework import serializers
 
-from budget.models import PurchaseRecord
+from budget.models import Department, PurchaseRecord
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    """Serializer for a Department."""
+
+    class Meta:
+        """Meta options for the serializer."""
+
+        model = Department
+        fields = ['pk', 'name', 'description', 'active']
 
 
 class PurchaseRecordSerializer(serializers.ModelSerializer):

@@ -57,7 +57,7 @@ import {
   useSerialNumberGenerator
 } from '../hooks/UseGenerator';
 import { useGlobalSettingsState } from '../states/SettingsStates';
-import { ProjectCodeField, TagsField } from './CommonFields';
+import { DepartmentField, ProjectCodeField, TagsField } from './CommonFields';
 /*
  * Construct a set of fields for creating / editing a PurchaseOrderLineItem instance
  */
@@ -198,6 +198,8 @@ export function usePurchaseOrderLineItemFields({
       destination: {
         icon: <IconSitemap />
       },
+      budget_type: {},
+      department: DepartmentField(),
       build_order: {
         disabled: !part?.assembly,
         filters: {
@@ -284,6 +286,8 @@ export function usePurchaseOrderFields({
           structural: false
         }
       },
+      budget_type: {},
+      department: DepartmentField(),
       tags: TagsField({}),
       link: {},
       contact: {

@@ -4,10 +4,32 @@ from django.urls import include, path
 
 from rest_framework import permissions
 
-from budget.models import PurchaseRecord
-from budget.serializers import PurchaseRecordSerializer
+from budget.models import Department, PurchaseRecord
+from budget.serializers import DepartmentSerializer, PurchaseRecordSerializer
 from InvenTree.filters import SEARCH_ORDER_FILTER
 from InvenTree.mixins import ListCreateAPI, RetrieveUpdateDestroyAPI
+
+
+class DepartmentMixin:
+    """Shared configuration for department endpoints."""
+
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class DepartmentList(DepartmentMixin, ListCreateAPI):
+    """List and create departments."""
+
+    filter_backends = SEARCH_ORDER_FILTER
+    filterset_fields = ['active']
+    ordering_fields = ['name', 'active']
+    ordering = 'name'
+    search_fields = ['name', 'description']
+
+
+class DepartmentDetail(DepartmentMixin, RetrieveUpdateDestroyAPI):
+    """Retrieve, update or delete a single department."""
 
 
 class PurchaseRecordMixin:
@@ -50,5 +72,12 @@ budget_api_urls = [
             ),
             path('', PurchaseRecordList.as_view(), name='api-purchase-record-list'),
         ]),
-    )
+    ),
+    path(
+        'department/',
+        include([
+            path('<int:pk>/', DepartmentDetail.as_view(), name='api-department-detail'),
+            path('', DepartmentList.as_view(), name='api-department-list'),
+        ]),
+    ),
 ]

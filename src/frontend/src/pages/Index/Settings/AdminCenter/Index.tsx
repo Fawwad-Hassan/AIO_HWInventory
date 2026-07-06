@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import { Stack } from '@mantine/core';
 import {
+  IconBuilding,
   IconCoins,
   IconCpu,
   IconDevicesPc,
@@ -89,6 +90,10 @@ const ImportSessionTable = Loadable(
 
 const ProjectCodeTable = Loadable(
   lazy(() => import('../../../../tables/settings/ProjectCodeTable'))
+);
+
+const DepartmentTable = Loadable(
+  lazy(() => import('../../../../tables/settings/DepartmentTable'))
 );
 
 const CustomStateTable = Loadable(
@@ -191,6 +196,12 @@ export default function AdminCenter() {
             <ProjectCodeTable />
           </Stack>
         )
+      },
+      {
+        name: 'departments',
+        label: t`Departments`,
+        icon: <IconBuilding />,
+        content: <DepartmentTable />
       },
       {
         name: 'custom-states',
@@ -296,6 +307,7 @@ export default function AdminCenter() {
           'import',
           'export',
           'project-codes',
+          'departments',
           'custom-states',
           'custom-units'
         ]

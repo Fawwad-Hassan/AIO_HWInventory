@@ -611,6 +611,13 @@ class Order(
         raise NotImplementedError(f'get_status_class() not implemented for {__class__}')
 
 
+# Budget classification choices for purchases (must match budget.PurchaseRecord.BudgetType).
+PURCHASE_BUDGET_TYPE_CHOICES = [
+    ('recurring', _('Recurring')),
+    ('capital', _('Capital')),
+]
+
+
 class PurchaseOrder(TotalPriceMixin, Order):
     """A PurchaseOrder represents goods shipped inwards from an external supplier.
 
@@ -754,6 +761,25 @@ class PurchaseOrder(TotalPriceMixin, Order):
         null=True,
         verbose_name=_('Destination'),
         help_text=_('Destination for received items'),
+    )
+
+    budget_type = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        choices=PURCHASE_BUDGET_TYPE_CHOICES,
+        verbose_name=_('Budget Type'),
+        help_text=_('Recurring consumable or one-time capital'),
+    )
+
+    department = models.ForeignKey(
+        'budget.Department',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='purchase_orders',
+        verbose_name=_('Department'),
+        help_text=_('Department or purpose for this order'),
     )
 
     @transaction.atomic
@@ -2258,6 +2284,25 @@ class PurchaseOrderLineItem(OrderLineItem):
         blank=True,
         null=True,
         help_text=_('Destination for received items'),
+    )
+
+    budget_type = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        choices=PURCHASE_BUDGET_TYPE_CHOICES,
+        verbose_name=_('Budget Type'),
+        help_text=_('Recurring consumable or one-time capital'),
+    )
+
+    department = models.ForeignKey(
+        'budget.Department',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='po_lines',
+        verbose_name=_('Department'),
+        help_text=_('Department or purpose for this item'),
     )
 
     def get_destination(self):
