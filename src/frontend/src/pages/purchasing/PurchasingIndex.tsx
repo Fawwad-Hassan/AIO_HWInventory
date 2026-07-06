@@ -14,12 +14,16 @@ import {
 import { useCallback, useMemo } from 'react';
 
 import type { EventContentArg } from '@fullcalendar/core';
+import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType, PluginPanelKey } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import type { TableFilter } from '@lib/index';
 import { useLocalStorage } from '@mantine/hooks';
 import OrderCalendar from '../../components/calendar/OrderCalendar';
 import OrderCalendarToolTip from '../../components/calendar/OrderCalendarToolTip';
+import SummaryStrip, {
+  type SummaryMetric
+} from '../../components/dashboard/SummaryStrip';
 import PermissionDenied from '../../components/errors/PermissionDenied';
 import { PageDetail } from '../../components/nav/PageDetail';
 import { PanelGroup } from '../../components/panels/PanelGroup';
@@ -91,6 +95,71 @@ export default function PurchasingIndex() {
   });
 
   const panels = useMemo(() => {
+    // Prepend an at-a-glance summary strip to a panel's content
+    const wrapWithSummary = (panel: any, metrics: SummaryMetric[]): any => ({
+      ...panel,
+      content: (
+        <Stack gap='sm'>
+          <SummaryStrip metrics={metrics} />
+          {panel.content}
+        </Stack>
+      )
+    });
+
+    const poMetrics: SummaryMetric[] = [
+      { title: t`Total Orders`, endpoint: ApiEndpoints.purchase_order_list },
+      {
+        title: t`Outstanding`,
+        endpoint: ApiEndpoints.purchase_order_list,
+        params: { outstanding: true },
+        color: 'teal'
+      },
+      {
+        title: t`Overdue`,
+        endpoint: ApiEndpoints.purchase_order_list,
+        params: { overdue: true },
+        color: 'red'
+      },
+      {
+        title: t`Completed`,
+        endpoint: ApiEndpoints.purchase_order_list,
+        params: { status: 30 },
+        color: 'teal'
+      }
+    ];
+
+    const supplierMetrics: SummaryMetric[] = [
+      {
+        title: t`Suppliers`,
+        endpoint: ApiEndpoints.company_list,
+        params: { is_supplier: true }
+      },
+      {
+        title: t`Supplier Parts`,
+        endpoint: ApiEndpoints.supplier_part_list
+      },
+      {
+        title: t`Outstanding Orders`,
+        endpoint: ApiEndpoints.purchase_order_list,
+        params: { outstanding: true },
+        color: 'teal'
+      }
+    ];
+
+    const supplierPartMetrics: SummaryMetric[] = [
+      { title: t`Supplier Parts`, endpoint: ApiEndpoints.supplier_part_list },
+      {
+        title: t`Suppliers`,
+        endpoint: ApiEndpoints.company_list,
+        params: { is_supplier: true }
+      },
+      {
+        title: t`Purchaseable Parts`,
+        endpoint: ApiEndpoints.part_list,
+        params: { active: true, purchaseable: true }
+      }
+    ];
+
     return [
       {
         name: 'budget',
@@ -98,84 +167,93 @@ export default function PurchasingIndex() {
         icon: <IconReportMoney />,
         content: <BudgetDashboard />
       },
-      SegmentedControlPanel({
-        name: 'purchaseorders',
-        label: t`Purchase Orders`,
-        icon: <IconShoppingCart />,
-        hidden: !user.hasViewRole(UserRoles.purchase_order),
-        selection: purchaseOrderView,
-        onChange: setPurchaseOrderView,
-        options: [
-          {
-            value: 'table',
-            label: t`Table View`,
-            icon: <IconTable />,
-            content: <PurchaseOrderTable />
-          },
-          {
-            value: 'calendar',
-            label: t`Calendar View`,
-            icon: <IconCalendar />,
-            content: <PurchaseOrderCalendar />
-          },
-          {
-            value: 'parametric',
-            label: t`Parametric View`,
-            icon: <IconListDetails />,
-            content: <PurchaseOrderParametricTable />
-          }
-        ]
-      }),
-      SegmentedControlPanel({
-        name: 'suppliers',
-        label: t`Suppliers`,
-        icon: <IconBuildingStore />,
-        selection: supplierView,
-        onChange: setSupplierView,
-        options: [
-          {
-            value: 'table',
-            label: t`Table View`,
-            icon: <IconTable />,
-            content: (
-              <CompanyTable
-                companyType='supplier'
-                path='purchasing/supplier'
-                params={{ is_supplier: true }}
-              />
-            )
-          },
-          {
-            value: 'parametric',
-            label: t`Parametric View`,
-            icon: <IconListDetails />,
-            content: (
-              <ParametricCompanyTable queryParams={{ is_supplier: true }} />
-            )
-          }
-        ]
-      }),
-      SegmentedControlPanel({
-        name: 'supplier-parts',
-        label: t`Supplier Parts`,
-        icon: <IconPackageExport />,
-        selection: supplierPartsView,
-        onChange: setSupplierPartsView,
-        options: [
-          {
-            value: 'table',
-            label: t`Table View`,
-            icon: <IconTable />,
-            content: <SupplierPartTable />
-          },
-          {
-            value: 'parametric',
-            label: t`Parametric View`,
-            icon: <IconListDetails />,
-            content: <SupplierPartParametricTable />
-          }
-        ]
-      }),
+      wrapWithSummary(
+        SegmentedControlPanel({
+          name: 'purchaseorders',
+          label: t`Purchase Orders`,
+          icon: <IconShoppingCart />,
+          hidden: !user.hasViewRole(UserRoles.purchase_order),
+          selection: purchaseOrderView,
+          onChange: setPurchaseOrderView,
+          options: [
+            {
+              value: 'table',
+              label: t`Table View`,
+              icon: <IconTable />,
+              content: <PurchaseOrderTable />
+            },
+            {
+              value: 'calendar',
+              label: t`Calendar View`,
+              icon: <IconCalendar />,
+              content: <PurchaseOrderCalendar />
+            },
+            {
+              value: 'parametric',
+              label: t`Parametric View`,
+              icon: <IconListDetails />,
+              content: <PurchaseOrderParametricTable />
+            }
+          ]
+        }),
+        poMetrics
+      ),
+      wrapWithSummary(
+        SegmentedControlPanel({
+          name: 'suppliers',
+          label: t`Suppliers`,
+          icon: <IconBuildingStore />,
+          selection: supplierView,
+          onChange: setSupplierView,
+          options: [
+            {
+              value: 'table',
+              label: t`Table View`,
+              icon: <IconTable />,
+              content: (
+                <CompanyTable
+                  companyType='supplier'
+                  path='purchasing/supplier'
+                  params={{ is_supplier: true }}
+                />
+              )
+            },
+            {
+              value: 'parametric',
+              label: t`Parametric View`,
+              icon: <IconListDetails />,
+              content: (
+                <ParametricCompanyTable queryParams={{ is_supplier: true }} />
+              )
+            }
+          ]
+        }),
+        supplierMetrics
+      ),
+      wrapWithSummary(
+        SegmentedControlPanel({
+          name: 'supplier-parts',
+          label: t`Supplier Parts`,
+          icon: <IconPackageExport />,
+          selection: supplierPartsView,
+          onChange: setSupplierPartsView,
+          options: [
+            {
+              value: 'table',
+              label: t`Table View`,
+              icon: <IconTable />,
+              content: <SupplierPartTable />
+            },
+            {
+              value: 'parametric',
+              label: t`Parametric View`,
+              icon: <IconListDetails />,
+              content: <SupplierPartParametricTable />
+            }
+          ]
+        }),
+        supplierPartMetrics
+      ),
       SegmentedControlPanel({
         name: 'manufacturer',
         label: t`Manufacturers`,
