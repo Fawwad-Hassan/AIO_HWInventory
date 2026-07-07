@@ -18,6 +18,15 @@ export function Thumbnail({
   hover,
   hoverSize = 128
 }: Readonly<ThumbnailProps>) {
+  // Treat the blank/placeholder image as "no image", so empty placeholders are
+  // never shown (in tables, dropdowns or inline renders).
+  const imageSrc = useMemo(() => {
+    if (!src || src.includes('blank_image')) {
+      return undefined;
+    }
+    return src;
+  }, [src]);
+
   const inner = useMemo(() => {
     if (link) {
       return (
@@ -32,7 +41,7 @@ export function Thumbnail({
 
   return (
     <HoverCard
-      disabled={!hover || !src}
+      disabled={!hover || !imageSrc}
       withinPortal
       shadow='xs'
       openDelay={300}
@@ -42,9 +51,9 @@ export function Thumbnail({
         <Group align={align ?? 'left'} gap='xs' wrap='nowrap'>
           {/* Only render an image when one has actually been uploaded -
               empty placeholder images are intentionally not shown. */}
-          {src && (
+          {imageSrc && (
             <ApiImage
-              src={src}
+              src={imageSrc}
               aria-label={alt}
               w={size}
               fit='contain'
@@ -57,7 +66,7 @@ export function Thumbnail({
       </HoverCard.Target>
       <HoverCard.Dropdown>
         <Image
-          src={src ?? ''}
+          src={imageSrc ?? ''}
           alt={alt}
           w={hoverSize}
           fit='contain'
