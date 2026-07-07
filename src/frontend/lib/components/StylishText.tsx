@@ -1,29 +1,11 @@
-import {
-  type MantineSize,
-  Text,
-  darken,
-  getThemeColor,
-  useMantineTheme
-} from '@mantine/core';
-import { useMemo } from 'react';
+import { type MantineSize, Text } from '@mantine/core';
 import type { JSX } from 'react';
 
-// Hook that memoizes the gradient color based on the primary color of the theme
-const useThematicGradient = () => {
-  const theme = useMantineTheme();
+// The AIO brand gradient (coral -> mauve -> violet), matching the login screen.
+const BRAND_GRADIENT =
+  'linear-gradient(120deg, #f9694e 0%, #b974a1 55%, #8a73cb 100%)';
 
-  const primary = useMemo(() => {
-    return getThemeColor(theme.primaryColor, theme);
-  }, [theme]);
-
-  const secondary = useMemo(() => darken(primary, 0.25), [primary]);
-
-  return useMemo(() => {
-    return { primary, secondary };
-  }, [primary, secondary]);
-};
-
-// A stylish text component that uses the primary color of the theme
+// A stylish heading that uses the AIO brand gradient
 export function StylishText({
   children,
   size
@@ -31,14 +13,17 @@ export function StylishText({
   children: JSX.Element | string;
   size?: MantineSize;
 }>) {
-  const { primary, secondary } = useThematicGradient();
-
   return (
     <Text
       fw={700}
       size={size ?? 'xl'}
-      variant='gradient'
-      gradient={{ from: primary.toString(), to: secondary.toString() }}
+      style={{
+        backgroundImage: BRAND_GRADIENT,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        width: 'fit-content'
+      }}
     >
       {children}
     </Text>

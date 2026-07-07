@@ -28,3 +28,24 @@
 .mantine-datatable-resizable-columns {
   table-layout: auto !important;
 }
+
+/*
+ * AIO brand gradient headings (coral -> mauve -> violet).
+ * Applied to page/section titles and table column headers.
+ *
+ * We set -webkit-text-fill-color (not color) so the gradient only fills the
+ * text glyphs; SVG sort/filter icons keep their own colour (currentColor).
+ */
+.mantine-Title-root,
+.mantine-Table-th,
+.mantine-datatable thead th {
+  background-image: linear-gradient(
+    120deg,
+    #f9694e 0%,
+    #b974a1 55%,
+    #8a73cb 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
