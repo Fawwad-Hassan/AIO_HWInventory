@@ -10,10 +10,10 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import { api } from '../../App';
 import {
-  useCreateApiFormModal,
   useDeleteApiFormModal,
   useEditApiFormModal
 } from '../../hooks/UseForm';
+import AddPurchaseModal from './AddPurchaseModal';
 
 const recordFields = () => ({
   date: {},
@@ -82,13 +82,7 @@ export default function PurchaseRecordTable() {
 
   const [selected, setSelected] = useState<number>(-1);
 
-  const newRecord = useCreateApiFormModal({
-    url: ApiEndpoints.purchase_record_list,
-    title: t`Add Purchase Record`,
-    fields: recordFields(),
-    focus: 'item',
-    onFormSuccess: () => query.refetch()
-  });
+  const [addOpen, setAddOpen] = useState<boolean>(false);
 
   const editRecord = useEditApiFormModal({
     url: ApiEndpoints.purchase_record_list,
@@ -200,13 +194,17 @@ export default function PurchaseRecordTable() {
 
   return (
     <>
-      {newRecord.modal}
+      <AddPurchaseModal
+        opened={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSuccess={() => query.refetch()}
+      />
       {editRecord.modal}
       {deleteRecord.modal}
       <Group justify='flex-end' mb='xs'>
         <AddItemButton
-          tooltip={t`Add Purchase Record`}
-          onClick={() => newRecord.open()}
+          tooltip={t`Add Purchase`}
+          onClick={() => setAddOpen(true)}
         />
       </Group>
       <DataTable

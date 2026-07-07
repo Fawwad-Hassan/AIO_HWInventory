@@ -160,10 +160,30 @@ class PurchaseRecord(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        """Default the base-currency total to the record total when not provided."""
+        """Set the base-currency total (converted from the record currency)."""
         if not self.total_cost_base:
-            self.total_cost_base = self.total_cost or 0
+            self.total_cost_base = self._convert_to_base()
         super().save(*args, **kwargs)
+
+    def _convert_to_base(self):
+        """Convert total_cost (in the record currency) to the base currency."""
+        total = self.total_cost or 0
+
+        from common.currency import currency_code_default
+
+        base = currency_code_default()
+
+        if not total or not self.currency or self.currency == base:
+            return total
+
+        try:
+            from djmoney.contrib.exchange.models import convert_money
+            from djmoney.money import Money
+
+            return convert_money(Money(total, self.currency), base).amount
+        except Exception:
+            # If conversion is unavailable, fall back to the record total
+            return total
 
     def __str__(self):
         """String representation of a purchase record."""
