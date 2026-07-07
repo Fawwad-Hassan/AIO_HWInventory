@@ -138,8 +138,8 @@ export default function AnalyticsHome() {
   return (
     <Stack gap='lg'>
       <div>
-        <Title order={3}>{t`Welcome to AIO Inventory`}</Title>
-        <Text c='dimmed'>{t`A snapshot of your inventory and spending.`}</Text>
+        <Title order={3}>{t`AIO Hardware Lab Inventory`}</Title>
+        <Text c='dimmed'>{t`A snapshot of your lab inventory and spending.`}</Text>
       </div>
 
       <div>
