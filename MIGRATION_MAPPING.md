@@ -104,3 +104,34 @@ fields were added to the create/edit form.
   items that are actually re-purchased. Make sure the import does not set
   `purchaseable = true`, and that the `PART_PURCHASEABLE` default setting is off
   while importing so newly-created parts default to not-purchaseable.
+
+---
+
+## Migration executed ✅ (2026-07-08)
+
+Loaded from three exports of the user's current system + the old sheet-wise file:
+- `InvenTree_StockItem_2026-07-08_*.xlsx` (stock: qty, serial, status, location,
+  asset classification), `InvenTree_Part_2026-07-08.xlsx` (parts + **Category
+  Name**), `Lab Inventory.xlsx` (Owner / Assigned To / Asset Classification).
+
+**Result:** 2169 parts, 3289 stock items. 16 part categories + 85 stock
+locations (built from the user's screenshots; incl. an "Unassigned" location
+holding the 36 stock items that had no location in the export).
+
+Key rules applied:
+- **Category** from the Part export's Category Name. Duplicate-named device
+  categories (Kiosk 27Inch / TableSide AI / AIO APP Devices exist under both
+  "Device Components" and "Devices") were disambiguated using two extra stock
+  exports the user provided (Devices vs DeviceComponents).
+- **Owner / Assigned To** matched from `Lab Inventory.xlsx` by **Asset Name OR
+  Asset ID(=IPN)** — PCBs were renamed in the current system but keep their IPN,
+  so name-only matching lost ~570 rows (Humayun/Hardware Lab); IPN matching
+  recovered them. Remaining blanks filled by most-common-for-location, then
+  global mode (Owner→Fawad, Assigned→Adeel).
+- **Assigned To** values (Adeel, Hardware Lab, Firmware Team, Testing Team,
+  Electrical Design Team) created as **Groups** and linked via `responsible_owner`.
+- **Status**: OK→10, Damaged→55, Attention needed→50, Rejected→65.
+- Serialized rows (1146, across 61 parts) → those parts set `trackable=True`.
+- All parts `purchaseable=False`.
+
+Backups in `backups/`: `pre_cleanup_2026-07-07.dump`, `post_migration_2026-07-08.dump`.
