@@ -710,6 +710,8 @@ class PartSerializer(
             'duplicate',
             'initial_stock',
             'initial_supplier',
+            'initial_stock_quantity',
+            'initial_stock_location',
             'copy_category_parameters',
             'tags',
         ]
@@ -1066,6 +1068,28 @@ class PartSerializer(
         required=False,
     )
 
+    # Flat equivalents of 'initial_stock', for use with bulk (file) import,
+    # where a single column can only map to a single flat field
+    initial_stock_quantity = serializers.DecimalField(
+        max_digits=15,
+        decimal_places=5,
+        validators=[MinValueValidator(0)],
+        label=_('Initial Stock Quantity'),
+        help_text=_('Specify initial stock quantity for this Part'),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
+    initial_stock_location = serializers.PrimaryKeyRelatedField(
+        queryset=stock.models.StockLocation.objects.all(),
+        label=_('Initial Stock Location'),
+        help_text=_('Specify initial stock location for this Part'),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
     copy_category_parameters = serializers.BooleanField(
         default=True,
         required=False,
@@ -1104,6 +1128,8 @@ class PartSerializer(
         duplicate = validated_data.pop('duplicate', None)
         initial_stock = validated_data.pop('initial_stock', None)
         initial_supplier = validated_data.pop('initial_supplier', None)
+        initial_stock_quantity = validated_data.pop('initial_stock_quantity', None)
+        initial_stock_location = validated_data.pop('initial_stock_location', None)
         copy_category_parameters = validated_data.pop('copy_category_parameters', False)
 
         instance = super().create(validated_data)
@@ -1139,7 +1165,7 @@ class PartSerializer(
             # Get flattened list of parent categories
             instance.copy_category_parameters(instance.category)
 
-        # Create initial stock entry
+        # Create initial stock entry (from the 'Add Part' form)
         if initial_stock:
             quantity = initial_stock['quantity']
             location = initial_stock.get('location', None) or instance.default_location
@@ -1147,6 +1173,18 @@ class PartSerializer(
             if quantity > 0:
                 stockitem = stock.models.StockItem(
                     part=instance, quantity=quantity, location=location
+                )
+
+                if request := self.context.get('request', None):
+                    stockitem.save(user=request.user)
+
+        # Create initial stock entry (from a flat bulk/file import)
+        elif initial_stock_quantity:
+            location = initial_stock_location or instance.default_location
+
+            if initial_stock_quantity > 0:
+                stockitem = stock.models.StockItem(
+                    part=instance, quantity=initial_stock_quantity, location=location
                 )
 
                 if request := self.context.get('request', None):
