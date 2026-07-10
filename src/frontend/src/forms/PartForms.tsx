@@ -112,7 +112,6 @@ export function usePartFields({
         default: globalSettings.isSet('PART_TRACKABLE')
       },
       purchaseable: {
-        hidden: true,
         value: purchaseable,
         default: globalSettings.isSet('PART_PURCHASEABLE'),
         onValueChange: (value: boolean) => {
