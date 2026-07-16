@@ -1,9 +1,14 @@
 import { t } from '@lingui/core/macro';
 import { Anchor, Breadcrumbs, Group, Stack } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useCallback, useMemo, useState } from 'react';
 
 import { AddItemButton } from '@lib/components/AddItemButton';
-import { type RowAction, RowEditAction } from '@lib/components/RowActions';
+import {
+  type RowAction,
+  RowDeleteAction,
+  RowEditAction
+} from '@lib/components/RowActions';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
@@ -18,6 +23,7 @@ import { InvenTreeIcon } from '../../functions/icons';
 import {
   useBulkEditApiFormModal,
   useCreateApiFormModal,
+  useDeleteApiFormModal,
   useEditApiFormModal
 } from '../../hooks/UseForm';
 import { useUserState } from '../../states/UserState';
@@ -137,6 +143,21 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
     onFormSuccess: (record: any) => table.updateRecord(record)
   });
 
+  const deleteLocation = useDeleteApiFormModal({
+    url: ApiEndpoints.stock_location_list,
+    pk: selectedLocation,
+    title: t`Delete Stock Location`,
+    fields: {
+      delete_stock_items: { hidden: true, field_type: 'boolean', value: false },
+      delete_sub_locations: {
+        hidden: true,
+        field_type: 'boolean',
+        value: false
+      }
+    },
+    onFormSuccess: () => table.refreshTable()
+  });
+
   const setParent = useBulkEditApiFormModal({
     url: ApiEndpoints.stock_location_list,
     items: table.selectedIds,
@@ -181,6 +202,7 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
   const rowActions = useCallback(
     (record: any): RowAction[] => {
       const can_edit = user.hasChangeRole(UserRoles.stock_location);
+      const can_delete = user.hasDeleteRole(UserRoles.stock_location);
 
       return [
         RowEditAction({
@@ -188,6 +210,25 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
           onClick: () => {
             setSelectedLocation(record.pk);
             editLocation.open();
+          }
+        }),
+        RowDeleteAction({
+          hidden: !can_delete,
+          onClick: () => {
+            const itemCount = record.items ?? 0;
+            const sublocationCount = record.sublocations ?? 0;
+
+            if (itemCount > 0 || sublocationCount > 0) {
+              notifications.show({
+                title: t`Cannot Delete Location`,
+                message: t`This stock location cannot be deleted, as it still contains stock items or sublocations. Move or delete its contents first.`,
+                color: 'red'
+              });
+              return;
+            }
+
+            setSelectedLocation(record.pk);
+            deleteLocation.open();
           }
         })
       ];
@@ -199,6 +240,7 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
     <>
       {newLocation.modal}
       {editLocation.modal}
+      {deleteLocation.modal}
       {setParent.modal}
       <Stack gap='xs'>
         <Breadcrumbs>

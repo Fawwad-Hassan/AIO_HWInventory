@@ -1,10 +1,15 @@
 import { t } from '@lingui/core/macro';
 import { Anchor, Breadcrumbs, Group, Stack, Tooltip } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconBell } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { AddItemButton } from '@lib/components/AddItemButton';
-import { type RowAction, RowEditAction } from '@lib/components/RowActions';
+import {
+  type RowAction,
+  RowDeleteAction,
+  RowEditAction
+} from '@lib/components/RowActions';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
@@ -19,6 +24,7 @@ import { InvenTreeIcon } from '../../functions/icons';
 import {
   useBulkEditApiFormModal,
   useCreateApiFormModal,
+  useDeleteApiFormModal,
   useEditApiFormModal
 } from '../../hooks/UseForm';
 import { useUserState } from '../../states/UserState';
@@ -133,6 +139,21 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
     onFormSuccess: (record: any) => table.updateRecord(record)
   });
 
+  const deleteCategory = useDeleteApiFormModal({
+    url: ApiEndpoints.category_list,
+    pk: selectedCategory,
+    title: t`Delete Part Category`,
+    fields: {
+      delete_parts: { hidden: true, field_type: 'boolean', value: false },
+      delete_child_categories: {
+        hidden: true,
+        field_type: 'boolean',
+        value: false
+      }
+    },
+    onFormSuccess: () => table.refreshTable()
+  });
+
   const setParent = useBulkEditApiFormModal({
     url: ApiEndpoints.category_list,
     items: table.selectedIds,
@@ -177,6 +198,7 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
   const rowActions = useCallback(
     (record: any): RowAction[] => {
       const can_edit = user.hasChangeRole(UserRoles.part_category);
+      const can_delete = user.hasDeleteRole(UserRoles.part_category);
 
       return [
         RowEditAction({
@@ -184,6 +206,25 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
           onClick: () => {
             setSelectedCategory(record.pk);
             editCategory.open();
+          }
+        }),
+        RowDeleteAction({
+          hidden: !can_delete,
+          onClick: () => {
+            const partCount = record.part_count ?? 0;
+            const subcategoryCount = record.subcategories ?? 0;
+
+            if (partCount > 0 || subcategoryCount > 0) {
+              notifications.show({
+                title: t`Cannot Delete Category`,
+                message: t`This part category cannot be deleted, as it still contains parts or subcategories. Move or delete its contents first.`,
+                color: 'red'
+              });
+              return;
+            }
+
+            setSelectedCategory(record.pk);
+            deleteCategory.open();
           }
         })
       ];
@@ -195,6 +236,7 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
     <>
       {newCategory.modal}
       {editCategory.modal}
+      {deleteCategory.modal}
       {setParent.modal}
       <Stack gap='xs'>
         <Breadcrumbs>
