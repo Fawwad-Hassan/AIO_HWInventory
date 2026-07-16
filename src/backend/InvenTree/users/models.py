@@ -339,6 +339,43 @@ class Owner(models.Model):
         """Returns the API endpoint URL associated with the Owner model."""
         return reverse('api-owner-list')
 
+    # Used by the generic data importer, to allow an Owner to be specified by name
+    # (e.g. a username or a group name) rather than only by raw database ID.
+    IMPORT_ID_FIELDS = ['name']
+
+    @classmethod
+    def import_filter(cls, field, value):
+        """Custom lookup for the Owner model, used by the data importer.
+
+        Owner has no simple database fields of its own to match against by name,
+        as it is a generic wrapper around either a User or a Group. This provides
+        a 'name' lookup that matches a user's username, or a group's name.
+
+        Any other field (e.g. 'pk') falls back to a normal queryset filter.
+        """
+        if field != 'name':
+            return cls.objects.filter(**{field: value})
+
+        if not value:
+            return cls.objects.none()
+
+        user_type = ContentType.objects.get(app_label='auth', model='user')
+        group_type = ContentType.objects.get(app_label='auth', model='group')
+
+        user_ids = (
+            get_user_model()
+            .objects.filter(username__iexact=value)
+            .values_list('pk', flat=True)
+        )
+        group_ids = Group.objects.filter(name__iexact=value).values_list(
+            'pk', flat=True
+        )
+
+        return cls.objects.filter(
+            Q(owner_type=user_type, owner_id__in=user_ids)
+            | Q(owner_type=group_type, owner_id__in=group_ids)
+        )
+
     owner_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE, null=True, blank=True
     )

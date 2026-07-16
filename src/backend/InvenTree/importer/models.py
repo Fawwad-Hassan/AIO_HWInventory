@@ -197,8 +197,22 @@ class DataImportSession(models.Model):
         if not model_class:
             return None
 
+        # The serializer field name does not always match the underlying model
+        # field name (e.g. the Part serializer exposes 'responsible', which maps
+        # to the model field 'responsible_owner' via 'source'). Resolve the real
+        # model field name via the serializer, falling back to 'field_name' itself.
+        source = field_name
+
+        if serializer_class := self.serializer_class:
+            try:
+                serializer = serializer_class(data={}, importing=True)
+                if source_field := serializer.fields.get(field_name):
+                    source = source_field.source or field_name
+            except Exception:
+                pass
+
         try:
-            related_field = model_class._meta.get_field(field_name)
+            related_field = model_class._meta.get_field(source)
             model = related_field.remote_field.model
             return model
         except (AttributeError, FieldDoesNotExist):
@@ -752,7 +766,9 @@ class DataImportRow(models.Model):
                         field, value, lookup_field=field_lookup_mapping.get(field)
                     )
                 except DjangoValidationError as exc:
-                    extract_errors[field] = exc.message
+                    # exc.message only exists when raised with a single string;
+                    # exc.messages is always available regardless of how it was raised
+                    extract_errors[field] = '; '.join(exc.messages)
                     continue
 
             # Use the default value, if provided
@@ -862,10 +878,23 @@ class DataImportRow(models.Model):
             else {}
         )
 
+        def build_queryset(id_field):
+            """Construct a queryset matching 'value' against 'id_field' on 'model'.
+
+            Most models can be matched with a plain '.filter(id_field=value)' call.
+            Some models (e.g. Owner, which wraps a User or Group and has no simple
+            database field of its own) define a custom 'import_filter' classmethod
+            to handle the lookup instead.
+            """
+            if hasattr(model, 'import_filter'):
+                return model.import_filter(id_field, value).filter(**base_filters)
+
+            return model.objects.filter(**{id_field: value}, **base_filters)
+
         if lookup_field and type(lookup_field) is str:
             # A specific lookup field has been chosen by the user — query only that field
             try:
-                queryset = model.objects.filter(**{lookup_field: value}, **base_filters)
+                queryset = build_queryset(lookup_field)
             except ValueError:
                 return value
 
@@ -887,7 +916,7 @@ class DataImportRow(models.Model):
 
         for id_field in id_fields:
             try:
-                queryset = model.objects.filter(**{id_field: value}, **base_filters)
+                queryset = build_queryset(id_field)
             except ValueError:
                 continue
 
