@@ -1014,7 +1014,13 @@ class DataImportRow(models.Model):
                     self.errors = {'non_field_errors': str(e)}
                     result = False
 
-                self.save()
-                self.session.check_complete()
+        if commit:
+            # Persist the outcome of this attempt (valid / errors / complete)
+            # back to the database. Without this, a row which fails validation
+            # at commit time (e.g. a uniqueness clash) would silently keep its
+            # old 'valid' state, appearing as if nothing happened when the user
+            # tries to import it.
+            self.save()
+            self.session.check_complete()
 
         return result
