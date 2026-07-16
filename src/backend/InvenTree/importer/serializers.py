@@ -171,6 +171,19 @@ class DataImportRowSerializer(InvenTreeModelSerializer):
             'complete',
         ]
 
+    def update(self, instance, validated_data):
+        """Custom update method for the DataImportRow model.
+
+        If the row data is being changed, clear any stale errors from a
+        previous validation attempt, so that the row is properly re-checked
+        against the new data (instead of continuing to report errors that
+        no longer apply).
+        """
+        if 'data' in validated_data:
+            instance.errors = None
+
+        return super().update(instance, validated_data)
+
 
 class DataImportAcceptRowSerializer(serializers.Serializer):
     """Serializer for accepting rows of data."""
