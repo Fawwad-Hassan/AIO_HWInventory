@@ -731,7 +731,7 @@ class PartSerializer(
 
         if not create:
             # These fields are only used for the LIST API endpoint
-            for f in self.skip_create_fields():
+            for f in self.hidden_unless_creating_fields():
                 # Fields required for certain operations, but are not part of the model
                 if f in ['existing_image']:
                     continue
@@ -740,6 +740,21 @@ class PartSerializer(
     def get_api_url(self):
         """Return the API url associated with this serializer."""
         return reverse_lazy('api-part-list')
+
+    def hidden_unless_creating_fields(self):
+        """Fields which should be removed from the serializer entirely, unless we are creating a new Part via the full 'Add Part' form.
+
+        Note: 'initial_stock_quantity' and 'initial_stock_location' are *not* included here,
+        as (unlike the other fields below) they are also intended to be used outside of the
+        'create' flow - specifically, for bulk (file) import, which does not set 'create'.
+        """
+        return [
+            'duplicate',
+            'initial_stock',
+            'initial_supplier',
+            'copy_category_parameters',
+            'existing_image',
+        ]
 
     def skip_create_fields(self):
         """Skip these fields when instantiating a new Part instance."""
