@@ -749,6 +749,8 @@ class PartSerializer(
             'duplicate',
             'initial_stock',
             'initial_supplier',
+            'initial_stock_quantity',
+            'initial_stock_location',
             'copy_category_parameters',
             'existing_image',
         ]
