@@ -1,9 +1,8 @@
 import { t } from '@lingui/core/macro';
-import { IconFileUpload } from '@tabler/icons-react';
+import { IconFileUpload, IconPlus } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
 import { ActionButton } from '@lib/components/ActionButton';
-import { AddItemButton } from '@lib/components/AddItemButton';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
@@ -12,6 +11,7 @@ import useTable from '@lib/hooks/UseTable';
 import type { TableFilter } from '@lib/types/Filters';
 import type { StockOperationProps } from '@lib/types/Forms';
 import type { TableColumn } from '@lib/types/Tables';
+import { ActionDropdown } from '../../components/items/ActionDropdown';
 import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
 import { formatCurrency, formatPriceRange } from '../../defaults/formatters';
 import { dataImporterSessionFields } from '../../forms/ImporterForms';
@@ -498,18 +498,26 @@ export function StockItemTable({
           orderPartsWizard.openWizard();
         }}
       />,
-      <AddItemButton
-        key='add-stock-item'
+      <ActionDropdown
+        key='add-stock-actions'
+        tooltip={t`Add Stock`}
+        position='bottom-start'
+        icon={<IconPlus />}
         hidden={!allowAdd || !user.hasAddRole(UserRoles.stock)}
-        tooltip={t`Add Stock Item`}
-        onClick={() => newStockItem.open()}
-      />,
-      <ActionButton
-        key='import-stock-items'
-        hidden={!allowAdd || !user.hasAddRole(UserRoles.stock)}
-        tooltip={t`Import Stock Items`}
-        icon={<IconFileUpload />}
-        onClick={() => importStockItems.open()}
+        actions={[
+          {
+            name: t`Add Stock Item`,
+            icon: <IconPlus />,
+            tooltip: t`Add a new stock item`,
+            onClick: () => newStockItem.open()
+          },
+          {
+            name: t`Import from File`,
+            icon: <IconFileUpload />,
+            tooltip: t`Import stock items from a file`,
+            onClick: () => importStockItems.open()
+          }
+        ]}
       />
     ];
   }, [
