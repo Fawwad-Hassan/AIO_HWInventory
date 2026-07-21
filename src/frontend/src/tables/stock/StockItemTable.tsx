@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro';
+import { IconFileUpload } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
 import { ActionButton } from '@lib/components/ActionButton';
@@ -13,10 +14,12 @@ import type { StockOperationProps } from '@lib/types/Forms';
 import type { TableColumn } from '@lib/types/Tables';
 import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
 import { formatCurrency, formatPriceRange } from '../../defaults/formatters';
+import { dataImporterSessionFields } from '../../forms/ImporterForms';
 import { useStockFields } from '../../forms/StockForms';
 import { InvenTreeIcon } from '../../functions/icons';
 import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
+import { useImporterState } from '../../states/ImporterState';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import {
@@ -381,6 +384,7 @@ export function StockItemTable({
   });
 
   const user = useUserState();
+  const openImporter = useImporterState((state) => state.openImporter);
 
   const settings = useGlobalSettingsState();
 
@@ -443,6 +447,29 @@ export function StockItemTable({
     keepOpenOption: true
   });
 
+  const importSessionFields = useMemo(() => {
+    const fields = dataImporterSessionFields({
+      modelType: ModelType.stockitem
+    });
+
+    fields.field_defaults.value = {
+      ...params
+    };
+
+    return fields;
+  }, [params]);
+
+  const importStockItems = useCreateApiFormModal({
+    url: ApiEndpoints.import_session_list,
+    title: t`Import Stock Items`,
+    fields: importSessionFields,
+    onFormSuccess: (response: any) => {
+      openImporter(response.pk, {
+        onClose: table.refreshTable
+      });
+    }
+  });
+
   const [partsToOrder, setPartsToOrder] = useState<any[]>([]);
 
   const orderPartsWizard = OrderPartsWizard({
@@ -476,6 +503,13 @@ export function StockItemTable({
         hidden={!allowAdd || !user.hasAddRole(UserRoles.stock)}
         tooltip={t`Add Stock Item`}
         onClick={() => newStockItem.open()}
+      />,
+      <ActionButton
+        key='import-stock-items'
+        hidden={!allowAdd || !user.hasAddRole(UserRoles.stock)}
+        tooltip={t`Import Stock Items`}
+        icon={<IconFileUpload />}
+        onClick={() => importStockItems.open()}
       />
     ];
   }, [
@@ -489,6 +523,7 @@ export function StockItemTable({
   return (
     <>
       {newStockItem.modal}
+      {importStockItems.modal}
       {orderPartsWizard.wizard}
       {stockAdjustActions.modals.map((modal) => modal.modal)}
       <InvenTreeTable
