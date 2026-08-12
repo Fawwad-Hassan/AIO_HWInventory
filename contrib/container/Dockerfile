@@ -10,7 +10,7 @@
 # - Monitors source files for any changes, and live-reloads server
 
 # Base image last bumped 2026-06-16
-FROM python:3.14.6-slim-trixie@sha256:44dd04494ee8f3b538294360e7c4b3acb87c8268e4d0a4828a6500b1eff50061 AS inventree_base
+FROM python:3.15.0b4-slim-trixie@sha256:5a8eaccfe1e3f129a09c498616ec7046315e4a4f614e78424aedf806908cbecc AS inventree_base
 
 # Build arguments for this image
 ARG commit_tag=""
