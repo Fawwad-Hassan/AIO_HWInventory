@@ -125,11 +125,13 @@ Key rules applied:
   exports the user provided (Devices vs DeviceComponents).
 - **Owner / Assigned To** matched from `Lab Inventory.xlsx` by **Asset Name OR
   Asset ID(=IPN)** — PCBs were renamed in the current system but keep their IPN,
-  so name-only matching lost ~570 rows (Humayun/Hardware Lab); IPN matching
+  so name-only matching lost ~570 rows (mostly Hardware Lab items); IPN matching
   recovered them. Remaining blanks filled by most-common-for-location, then
-  global mode (Owner→Fawad, Assigned→Adeel).
-- **Assigned To** values (Adeel, Hardware Lab, Firmware Team, Testing Team,
+  the most common value overall (Owner→Person A, Assigned→Person B).
+- **Assigned To** values (Person B, Hardware Lab, Firmware Team, Testing Team,
   Electrical Design Team) created as **Groups** and linked via `responsible_owner`.
+
+*(Individual staff names in these notes are replaced with "Person A", "Person B".)*
 - **Status**: OK→10, Damaged→55, Attention needed→50, Rejected→65.
 - Serialized rows (1146, across 61 parts) → those parts set `trackable=True`.
 - All parts `purchaseable=False`.

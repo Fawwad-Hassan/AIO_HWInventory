@@ -81,18 +81,22 @@ When the past purchase data is provided, the plan is to:
 
 ## Historical purchase analysis (Feb–May 2026, from `Book 3.xlsx`)
 
+> **Note:** every amount and unit price in this section is a **placeholder test
+> figure** for illustration only. They do not reflect actual spending. The
+> real analysis is kept outside this repository.
+
 Source: 4 sheets — an initial setup sheet ("Sheet1", ~Feb 2026, four vendor blocks
 side-by-side) plus monthly sheets for March, April, May 2026 (each in a different
 ad-hoc format — the "new file every month" problem). No history before Feb 2026.
-Currency: mostly PKR, some RMB (rate used: **1 RMB = 40.98 PKR**).
+Currency: mostly PKR, some RMB (RMB converted to PKR at the exchange rate of the day).
 
-### Spend by period (PKR)
+### Spend by period (PKR, test figures)
 | Period | Spend | Nature |
 |---|---|---|
-| Feb (setup) | **~446,000** (≈139k local PKR + ~7,500 RMB ≈ 307k imported tools) | One-time capital |
-| March 2026 | ~18,000 | Small repair consumables |
-| April 2026 | ~82,000 | Heavy Mechanical-Lab tooling + a resin/filament price list (not actual buys) |
-| May 2026 | ~62,000 | Consumable-heavy (batteries, degreaser, alcohol) + ID/PCB materials |
+| Feb (setup) | **~100,000** (≈40k local PKR + ≈60k imported tools) | One-time capital |
+| March 2026 | ~5,000 | Small repair consumables |
+| April 2026 | ~20,000 | Heavy Mechanical-Lab tooling + a resin/filament price list (not actual buys) |
+| May 2026 | ~15,000 | Consumable-heavy (batteries, degreaser, alcohol) + ID/PCB materials |
 
 **Key insight:** spend to date is dominated by **one-time lab setup** (imported tools,
 power supplies, drills/press/clamps, instruments, 3D-printer materials). The **recurring
@@ -106,13 +110,13 @@ glue sticks, jumper wire, PCB etchant (FeCl3), storage boxes (semi-recurring).
 The Sheet1 **"Digi Log" block is effectively a recurring-consumables order** and is a
 good basis for the recurring "template" PO.
 
-### Cost trends (Feb → May)
+### Cost trends (Feb → May, test figures)
 | Item | Feb unit | May unit | Change |
 |---|---|---|---|
-| AA cell | 35 | 60 | +71% |
-| 9V battery | 300 | 500 | +67% |
-| AAA cell | 30 | 40 | +33% |
-| Universal Degreaser | 750 | 750 | flat |
+| AA cell | 10 | 15 | +50% |
+| 9V battery | 100 | 140 | +40% |
+| AAA cell | 8 | 10 | +25% |
+| Universal Degreaser | 200 | 200 | flat |
 
 Batteries are both a large recurring line and rising fast — a prime watch item
 (candidate for bulk buying).
@@ -124,9 +128,9 @@ Batteries are both a large recurring line and rising fast — a prime watch item
 - Drop **quantity-0 price-list rows** (April resins/filaments) → these become supplier
   part prices, not spend.
 - Separate **recurring consumables** from **one-time capital** (part categories).
-- Handle **PKR vs RMB** (base = PKR; RMB orders convert at 40.98).
+- Handle **PKR vs RMB** (base = PKR; RMB orders converted to PKR).
 
-### Rough budget baseline
-- **Recurring consumables:** ~25,000–35,000 PKR/month (batteries the main swing).
-- **Capital/setup:** highly variable (Feb ~446k, April ~60k tooling) → budget as a
+### Rough budget baseline (test figures)
+- **Recurring consumables:** ~5,000–8,000 PKR/month (batteries the main swing).
+- **Capital/setup:** highly variable (Feb ~100k, April ~15k tooling) → budget as a
   quarterly/project pool, not a flat monthly line.
