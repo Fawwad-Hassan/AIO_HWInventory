@@ -80,10 +80,31 @@ Surfaced in: PartSerializer + PartBriefSerializer (so stock `part_detail` carrie
 
 **Migration data notes:** old export's `Asset Classification` (`High`/`Medium`/`Low`/blank) maps 1:1 into `Part.asset_classification`. Owner values load into `Part.asset_owner` as free text.
 
-### Phase 3 — Simplified "Add Part" popup ⏳ (pending)
+### Phase 3 — Simplified "Add Part" popup ✅ (implemented)
 
-Record here: which sections/fields were removed or hidden, and which new Phase 2
-fields were added to the create/edit form.
+**No database changes.** Fields are hidden on the form only (`hidden: true` in
+`src/frontend/src/forms/PartForms.tsx`), so they can be switched back on easily.
+
+- **Shown:** Category, Name, IPN, Description, Asset Classification (moved to
+  just after Description), Keywords, Default Location, Minimum Stock, Assigned
+  To, Owner, Trackable, Purchaseable, Virtual, Active, and the Initial Stock
+  section.
+- **Hidden:** revision, variants, tags, units, link, expiry, maximum stock, most
+  other yes/no toggles, copy-category-parameters, and the supplier section.
+- Fixed the Initial Stock section never appearing on Add Part.
+
+### Later changes (July 2026)
+
+Logged in full in the git history on `my-customizations`. In short:
+- **Navigation/tables:** Low Stock page with live badge; category and location
+  management moved to the Admin Center (with delete for empty ones); tables
+  remember their page and search; Last Updated column on parts.
+- **Purchasing/budget:** see `PURCHASING_PLAN.md`.
+- **UI overhaul:** AIO branding, analytics home page, summary strips,
+  redundant headings/breadcrumbs/toggles removed.
+- **Bulk import fixes:** initial stock quantity/location, Assigned To lookup by
+  user or group name, errors clearing after a fix, no more silent failures.
+  Import from File added to the Stock Items table.
 
 ---
 

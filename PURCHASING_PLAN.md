@@ -35,7 +35,31 @@ a custom monthly **budget tracker/planner**.
 - A **calendar view** of POs, plus filterable tables of orders / suppliers /
   supplier parts.
 
-## The gap → custom Budget Tracker (to be built)
+## Status (July 2026)
+
+The budget tracker has been built (see the git history on `my-customizations`
+for details). What exists now:
+- **Budget app** (`src/backend/InvenTree/budget/`): a purchase-record store with
+  its own API, separate from the full purchase-order workflow, so historical
+  and quick manual purchases can be logged.
+- **Budget panel on the Purchasing page:** total / recurring / capital summary,
+  recommended monthly recurring and quarterly capital budgets worked out from
+  history, monthly recurring-vs-capital chart, spend-by-department chart, top
+  recurring items (average quantity, unit price and monthly spend), and the
+  purchase records grouped into one row per purchase.
+- **Add Purchase** form for entering several items in one manual purchase.
+- **Budget Type** (Recurring / Capital) and **Department** on each purchase
+  order line, with Departments managed from a new Admin Center tab.
+- **Completed purchase orders are logged automatically** as budget records.
+- **PKR currency support** through a new exchange-rate plugin; totals are
+  converted to PKR for reporting.
+- **Simpler purchase order and line item forms**, and Suppliers + Supplier Parts
+  merged into one panel.
+
+Not built yet, from the original idea list below: the recurring-order planner,
+fixed budget targets with an over-budget gauge, and spend by supplier.
+
+## The gap → custom Budget Tracker (original plan)
 
 InvenTree has **no** budget concept, **no** monthly spend rollups, and **no**
 spend-by-supplier/category dashboard. To reach the goal we'll build a custom
